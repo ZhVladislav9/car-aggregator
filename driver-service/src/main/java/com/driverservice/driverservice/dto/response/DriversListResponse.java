@@ -11,6 +11,8 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DriversListResponse {
+    Integer page;
+    Integer size;
     Integer total;
     String sortedByField;
     List<DriverResponse> drivers;

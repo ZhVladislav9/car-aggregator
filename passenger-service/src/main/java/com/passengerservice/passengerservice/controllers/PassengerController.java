@@ -18,8 +18,11 @@ public class PassengerController {
     private PassengerServiceImpl passengerServiceImpl;
 
     @GetMapping("/all")
-    public PassengersListResponse getPassengers(@RequestParam(required = false, name = "field") String sortByField) {
-        return passengerServiceImpl.getPassengersList(sortByField);
+    public PassengersListResponse getPassengers(
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false, name = "field") String sortByField) {
+        return passengerServiceImpl.getPassengersList(offset, page, sortByField);
     }
     @GetMapping("/{id}")
     public PassengerResponse getPassengerById(@PathVariable int id){

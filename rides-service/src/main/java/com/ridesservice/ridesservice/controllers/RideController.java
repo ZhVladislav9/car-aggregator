@@ -17,8 +17,10 @@ public class RideController {
     @Autowired
     private RideServiceImpl rideServiceImpl;
     @GetMapping("/all")
-    public RidesListResponse gerRides(@RequestParam(required = false, name = "field") String sortByField){
-        return rideServiceImpl.getRidesList(sortByField);
+    public RidesListResponse gerRides(@RequestParam(required = false) Integer offset,
+                                      @RequestParam(required = false) Integer page,
+                                      @RequestParam(required = false, name = "field") String sortByField){
+        return rideServiceImpl.getRidesList(offset, page, sortByField);
     }
     @GetMapping("/{id}")
     public RideResponse getRideById(@PathVariable Integer id){
@@ -30,11 +32,35 @@ public class RideController {
         return rideServiceImpl.updateRide(id, rideRequest);
     }
     @DeleteMapping
-    public ResponseEntity<HttpStatus> deleteDriver(@RequestParam Integer id){
+    public ResponseEntity<HttpStatus> deleteRide(@RequestParam Integer id){
         return rideServiceImpl.deleteRide(id);
     }
     @PostMapping
     public RideResponse addRide(@RequestBody @Valid RideRequest rideRequest){
         return rideServiceImpl.addRide(rideRequest);
+    }
+    @PutMapping("/{id}/finish")
+    public RideResponse finishRide(@PathVariable Integer id){
+        return rideServiceImpl.finishRide(id);
+    }
+    @PutMapping("/{id}/reject")
+    public RideResponse rejectRide(@PathVariable Integer id){
+        return rideServiceImpl.rejectRide(id);
+    }
+    @PutMapping("/{id}/accept")
+    public RideResponse acceptRide(@PathVariable Integer id){
+        return rideServiceImpl.acceptRide(id);
+    }
+    @PutMapping("/{id}/update-price")
+    public RideResponse updatePrice(@PathVariable Integer id,@RequestParam Double price){
+        return rideServiceImpl.updatePrice(id, price);
+    }
+    @GetMapping("/passenger/{id}/history")
+    public RidesListResponse getHistoryByPassengerId(
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false, name = "field") String sortByField,
+            @PathVariable Integer  id){
+        return rideServiceImpl.getPassengerRidesHistory(offset, page, sortByField, id);
     }
 }

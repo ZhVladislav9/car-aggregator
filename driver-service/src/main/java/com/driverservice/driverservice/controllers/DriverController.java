@@ -20,16 +20,21 @@ public class DriverController {
     @Autowired
     private DriverServiceImpl driverServiceImpl;
     @GetMapping("/all")
-    public DriversListResponse gerDrivers(@RequestParam(required = false, name = "field") String sortByField){
-        return driverServiceImpl.getDriversList(sortByField);
+    public DriversListResponse gerDrivers(
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false, name = "field") String sortByField){
+        return driverServiceImpl.getDriversList(offset, page, sortByField);
     }
     @GetMapping("/{id}")
     public DriverResponse getDriverById(@PathVariable Integer id){
         return driverServiceImpl.getDriverById(id);
     }
     @GetMapping("/available")
-    public DriversListResponse getAvailableDrivers(@RequestParam(required = false) String field) {
-        return driverServiceImpl.getAvailableDriversList(field);
+    public DriversListResponse getAvailableDrivers(@RequestParam(required = false) Integer offset,
+                                                   @RequestParam(required = false) Integer page,
+                                                   @RequestParam(required = false, name = "field") String sortByField) {
+        return driverServiceImpl.getAvailableDriversList(offset, page, sortByField);
     }
     @PutMapping
     public DriverResponse updateDriver(@RequestParam Integer id, @RequestBody DriverRequest driverRequest){

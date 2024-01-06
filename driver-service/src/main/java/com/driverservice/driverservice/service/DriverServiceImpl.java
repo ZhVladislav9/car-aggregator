@@ -14,6 +14,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,14 +103,42 @@ public class DriverServiceImpl implements DriverService {
         return DriversListResponse.builder()
                 .drivers(responseList)
                 .sortedByField(sortByField)
+                .total(responseList.size())
                 .build();
     }
-    public DriversListResponse getDriversList(String sortByField) {
-
-        if (sortByField != null) {
+    public DriversListResponse getDriversList(Integer offset, Integer page, String sortByField) {
+        if (offset != null && page != null && sortByField != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPaginationAndSort(offset, page, sortByField);
+        } else if (offset != null && page != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPagination(offset, page);
+        } else if (sortByField != null) {
             validateSortingParameter(sortByField);
             return getSortedDrivers(sortByField);
         } else return getDrivers();
+    }
+    private DriversListResponse getListWithPaginationAndSort(Integer offset, Integer page, String field) {
+        Page<DriverResponse> responsePage = driverRepository.findAll(PageRequest.of(page, offset)
+                        .withSort(Sort.by(field)))
+                .map(driverDTOConverter::convertDriverToDriverResponse);
+        return DriversListResponse.builder()
+                .drivers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .sortedByField(field)
+                .build();
+    }
+    private DriversListResponse getListWithPagination(Integer offset, Integer page) {
+        Page<DriverResponse> responsePage = driverRepository.findAll(PageRequest.of(page, offset))
+                .map(driverDTOConverter::convertDriverToDriverResponse);
+        return DriversListResponse.builder()
+                .drivers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .build();
     }
     private void dataIsUniqueCheck(DriverRequest request) {
         var errors = new HashMap<String, String>();
@@ -124,8 +154,14 @@ public class DriverServiceImpl implements DriverService {
             throw new AlreadyExistsException(errors);
         }
     }
-    public DriversListResponse getAvailableDriversList(String sortByField) {
-        if (sortByField != null) {
+    public DriversListResponse getAvailableDriversList(Integer offset, Integer page,String sortByField) {
+        if (offset != null && page != null && sortByField != null) {
+            validatePaginationParameters(offset, page);
+            return getAvailableListWithPaginationAndSort(offset, page, sortByField);
+        } else if (offset != null && page != null) {
+            validatePaginationParameters(offset, page);
+            return getAvailableListWithPagination(offset, page);
+        } else if (sortByField != null) {
             return getAvailableSortedDrivers(sortByField);
         } else return getAvailableDrivers();
     }
@@ -147,6 +183,29 @@ public class DriverServiceImpl implements DriverService {
         return DriversListResponse.builder()
                 .drivers(responseList)
                 .sortedByField(field)
+                .total(responseList.size())
+                .build();
+    }
+    private DriversListResponse getAvailableListWithPaginationAndSort(Integer offset, Integer page, String field) {
+        Page<DriverResponse> responsePage = driverRepository.findAllByIsAvailableIsTrue(PageRequest.of(page, offset)
+                        .withSort(Sort.by(field)))
+                .map(driverDTOConverter::convertDriverToDriverResponse);
+        return DriversListResponse.builder()
+                .drivers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .sortedByField(field)
+                .build();
+    }
+    private DriversListResponse getAvailableListWithPagination(Integer offset, Integer page) {
+        Page<DriverResponse> responsePage = driverRepository.findAllByIsAvailableIsTrue(PageRequest.of(page, offset))
+                .map(driverDTOConverter::convertDriverToDriverResponse);
+        return DriversListResponse.builder()
+                .drivers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
                 .build();
     }
     private void validateSortingParameter(String sortingParam) {
@@ -158,5 +217,9 @@ public class DriverServiceImpl implements DriverService {
             String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
             throw new InvalidRequestException(errorMessage);
         }
+    }
+    private void validatePaginationParameters(Integer offset, Integer page) {
+        if(offset < 0) throw new InvalidRequestException("Offset parameter is invalid");
+        if(page < 0)throw new InvalidRequestException("Page parameter is invalid");
     }
 }

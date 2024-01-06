@@ -11,6 +11,8 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RidesListResponse {
+    Integer page;
+    Integer size;
     Integer total;
     String sortedByField;
     List<RideResponse> rides;

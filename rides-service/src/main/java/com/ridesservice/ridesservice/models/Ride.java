@@ -26,7 +26,10 @@ public class Ride {
     Integer passengerId;
     @Column(name = "driver_id",nullable = false)
     Integer driverId;
-    LocalDateTime date;
+    @Column(name = "start_date",nullable = false)
+    LocalDateTime startDate;
+    @Column(name = "finish_date",nullable = true)
+    LocalDateTime finishDate;
     @Enumerated(EnumType.STRING)
     private RideStatus status;
 }

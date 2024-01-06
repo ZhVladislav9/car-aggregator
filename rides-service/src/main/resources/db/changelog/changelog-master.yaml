@@ -30,10 +30,15 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: date
+                  name: start_date
                   type: timestamp
                   constraints:
                     nullable: false
+              - column:
+                  name: finish_date
+                  type: timestamp
+                  constraints:
+                    nullable: true
               - column:
                   name: passenger_id
                   type: INTEGER

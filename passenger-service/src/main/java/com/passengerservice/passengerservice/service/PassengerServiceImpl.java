@@ -13,6 +13,8 @@ import com.passengerservice.passengerservice.service.interfaces.PassengerService
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,26 +90,55 @@ public class PassengerServiceImpl implements PassengerService {
         return PassengersListResponse.builder()
                 .passengers(responseList)
                 .sortedByField(sortByField)
+                .total(responseList.size())
                 .build();
     }
-    public PassengersListResponse getPassengersList(String sortByField) {
-        if (sortByField != null) {
+    public PassengersListResponse getPassengersList(Integer offset, Integer page, String sortByField) {
+        if (offset != null && page != null && sortByField != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPaginationAndSort(offset, page, sortByField);
+        } else if (offset != null && page != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPagination(offset, page);
+        } else if (sortByField != null) {
             validateSortingParameter(sortByField);
             return getSortedPassengers(sortByField);
         } else return getPassengers();
+    }
+    private PassengersListResponse getListWithPaginationAndSort(Integer offset, Integer page, String field) {
+        Page<PassengerResponse> responsePage = passengerRepository.findAll(PageRequest.of(page, offset)
+                        .withSort(Sort.by(field)))
+                .map(passengerDTOConverter::convertPassengerToPassengerResponse);
+        return PassengersListResponse.builder()
+                .passengers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .sortedByField(field)
+                .build();
+    }
+    private PassengersListResponse getListWithPagination(Integer offset, Integer page) {
+        Page<PassengerResponse> responsePage = passengerRepository.findAll(PageRequest.of(page, offset))
+                .map(passengerDTOConverter::convertPassengerToPassengerResponse);
+        return PassengersListResponse.builder()
+                .passengers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .build();
     }
     private void dataIsUniqueCheck(PassengerRequest request) {
         var errors = new HashMap<String, String>();
 
         if (passengerRepository.existsByEmail(request.getEmail())) {
-            log.error("Passenger with email {} is exists", request.getEmail());
+            log.error("Passenger with email {} exists", request.getEmail());
             errors.put(
                     "email",
                     String.format(PASSENGER_WITH_EMAIL_EXISTS_MESSAGE, request.getEmail())
             );
         }
         if (passengerRepository.existsByPhone(request.getPhone())) {
-            log.error("Passenger with phone {} is exists", request.getPhone());
+            log.error("Passenger with phone {} exists", request.getPhone());
             errors.put(
                     "phone",
                     String.format(PASSENGER_WITH_PHONE_EXISTS_MESSAGE, request.getPhone())
@@ -126,5 +157,9 @@ public class PassengerServiceImpl implements PassengerService {
             String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
             throw new InvalidRequestException(errorMessage);
         }
+    }
+    private void validatePaginationParameters(Integer offset, Integer page) {
+        if(offset < 0) throw new InvalidRequestException("Offset parameter is invalid");
+        if(page < 0)throw new InvalidRequestException("Page parameter is invalid");
     }
 }

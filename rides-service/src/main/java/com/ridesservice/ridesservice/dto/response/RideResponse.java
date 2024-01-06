@@ -1,6 +1,7 @@
 package com.ridesservice.ridesservice.dto.response;
 
 import com.ridesservice.ridesservice.models.RideStatus;
+import jakarta.persistence.Column;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +20,6 @@ public class RideResponse {
     Integer passengerId;
     Integer driverId;
     RideStatus status;
-    LocalDateTime date;
+    LocalDateTime startDate;
+    LocalDateTime finishDate;
 }
