@@ -37,16 +37,7 @@ public class DriverServiceImpl implements DriverService {
     @Autowired
     private DriverDTOConverter driverDTOConverter;
 
-    public DriversListResponse getDrivers(){
-        List<DriverResponse> drivers = driverRepository.findAll()
-                .stream()
-                .map(driverDTOConverter::convertDriverToDriverResponse)
-                .toList();
-        return DriversListResponse.builder()
-                .drivers(drivers)
-                .total(drivers.size())
-                .build();
-    }
+
     public DriverResponse getDriverById(Integer id){
         return driverDTOConverter.convertDriverToDriverResponse(driverRepository.findById(id)
                 .orElseThrow(() -> new DriverNotFoundException(id)));
@@ -66,6 +57,8 @@ public class DriverServiceImpl implements DriverService {
             editedDriver.setRating(driver.getRating());
         if(driver.getPhone() != null)
             editedDriver.setPhone(driver.getPhone());
+        if(driver.getEmail() != null)
+            editedDriver.setEmail(driver.getEmail());
         if(driver.getIsAvailable() != null)
             editedDriver.setIsAvailable(driver.getIsAvailable());
         driverRepository.save(editedDriver);
@@ -95,117 +88,98 @@ public class DriverServiceImpl implements DriverService {
         return driverDTOConverter.convertDriverToDriverResponse(driver);
     }
 
-    private DriversListResponse getSortedDrivers(String sortByField) {
-        List<DriverResponse> responseList = driverRepository.findAll(Sort.by(sortByField))
-                .stream()
-                .map(driverDTOConverter::convertDriverToDriverResponse)
-                .toList();
-        return DriversListResponse.builder()
-                .drivers(responseList)
-                .sortedByField(sortByField)
-                .total(responseList.size())
-                .build();
-    }
-    public DriversListResponse getDriversList(Integer offset, Integer page, String sortByField) {
-        if (offset != null && page != null && sortByField != null) {
-            validatePaginationParameters(offset, page);
-            return getListWithPaginationAndSort(offset, page, sortByField);
-        } else if (offset != null && page != null) {
-            validatePaginationParameters(offset, page);
-            return getListWithPagination(offset, page);
-        } else if (sortByField != null) {
-            validateSortingParameter(sortByField);
-            return getSortedDrivers(sortByField);
-        } else return getDrivers();
-    }
-    private DriversListResponse getListWithPaginationAndSort(Integer offset, Integer page, String field) {
-        Page<DriverResponse> responsePage = driverRepository.findAll(PageRequest.of(page, offset)
-                        .withSort(Sort.by(field)))
-                .map(driverDTOConverter::convertDriverToDriverResponse);
-        return DriversListResponse.builder()
-                .drivers(responsePage.getContent())
-                .size(responsePage.getContent().size())
-                .page(responsePage.getPageable().getPageNumber())
-                .total((int) responsePage.getTotalElements())
-                .sortedByField(field)
-                .build();
-    }
-    private DriversListResponse getListWithPagination(Integer offset, Integer page) {
-        Page<DriverResponse> responsePage = driverRepository.findAll(PageRequest.of(page, offset))
-                .map(driverDTOConverter::convertDriverToDriverResponse);
-        return DriversListResponse.builder()
-                .drivers(responsePage.getContent())
-                .size(responsePage.getContent().size())
-                .page(responsePage.getPageable().getPageNumber())
-                .total((int) responsePage.getTotalElements())
-                .build();
-    }
     private void dataIsUniqueCheck(DriverRequest request) {
         var errors = new HashMap<String, String>();
-
+        if (driverRepository.existsByEmail(request.getEmail())) {
+            log.error("Driver with email {} exists", request.getEmail());
+            errors.put(
+                    "email",
+                    String.format(DRIVER_WITH_EMAIL_EXISTS_MESSAGE, request.getEmail())
+            );
+        }
         if (driverRepository.existsByPhone(request.getPhone())) {
             log.error("Driver with phone {} is exists", request.getPhone());
             errors.put(
                     "phone",
-                    String.format(DRIVER_WITH_PHONE_S_ALREADY_EXISTS_MESSAGE, request.getPhone())
+                    String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE, request.getPhone())
             );
         }
         if (!errors.isEmpty()) {
             throw new AlreadyExistsException(errors);
         }
     }
+    public DriversListResponse getDriversList(Integer offset, Integer page, String sortByField) {
+        if (offset != null && page != null && sortByField != null) {
+            validatePaginationParameters(offset, page);
+            validateSortingParameter(sortByField);
+            return getListWithPaginationAndSort(driverRepository.findAll(PageRequest.of(page, offset)
+                            .withSort(Sort.by(sortByField)))
+                    .map(driverDTOConverter::convertDriverToDriverResponse), sortByField);
+        } else if (offset != null && page != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPagination(driverRepository.findAll(PageRequest.of(page, offset))
+                    .map(driverDTOConverter::convertDriverToDriverResponse));
+        } else if (sortByField != null) {
+            validateSortingParameter(sortByField);
+            return getListWithSort(driverRepository.findAll(Sort.by(sortByField))
+                    .stream()
+                    .map(driverDTOConverter::convertDriverToDriverResponse)
+                    .toList(), sortByField);
+        } else return getDrivers(driverRepository.findAll()
+                .stream()
+                .map(driverDTOConverter::convertDriverToDriverResponse)
+                .toList());
+    }
     public DriversListResponse getAvailableDriversList(Integer offset, Integer page,String sortByField) {
         if (offset != null && page != null && sortByField != null) {
             validatePaginationParameters(offset, page);
-            return getAvailableListWithPaginationAndSort(offset, page, sortByField);
+            validateSortingParameter(sortByField);
+            return getListWithPaginationAndSort(driverRepository.findAllByIsAvailableIsTrue(PageRequest.of(page, offset)
+                            .withSort(Sort.by(sortByField)))
+                    .map(driverDTOConverter::convertDriverToDriverResponse), sortByField);
         } else if (offset != null && page != null) {
             validatePaginationParameters(offset, page);
-            return getAvailableListWithPagination(offset, page);
+            return getListWithPagination(driverRepository.findAllByIsAvailableIsTrue(PageRequest.of(page, offset))
+                    .map(driverDTOConverter::convertDriverToDriverResponse));
         } else if (sortByField != null) {
-            return getAvailableSortedDrivers(sortByField);
-        } else return getAvailableDrivers();
-    }
-    public DriversListResponse getAvailableDrivers() {
-        List<DriverResponse> drivers = driverRepository.findAllByIsAvailableIsTrue()
+            validateSortingParameter(sortByField);
+            return getListWithSort(driverRepository.findAllByIsAvailableIsTrue(Sort.by(sortByField))
+                    .stream()
+                    .map(driverDTOConverter::convertDriverToDriverResponse)
+                    .toList(), sortByField);
+        } else return getDrivers(driverRepository.findAllByIsAvailableIsTrue()
                 .stream()
                 .map(driverDTOConverter::convertDriverToDriverResponse)
-                .toList();
+                .toList());
+    }
+    public DriversListResponse getDrivers(List<DriverResponse> drivers){
         return DriversListResponse.builder()
                 .drivers(drivers)
                 .total(drivers.size())
                 .build();
     }
-    public DriversListResponse getAvailableSortedDrivers(String field) {
-        List<DriverResponse> responseList = driverRepository.findAllByIsAvailableIsTrue(Sort.by(field))
-                .stream()
-                .map(driverDTOConverter::convertDriverToDriverResponse)
-                .toList();
+    private DriversListResponse getListWithPagination(Page<DriverResponse> responsePage) {
+        return DriversListResponse.builder()
+                .drivers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .build();
+    }
+    private DriversListResponse getListWithSort(List<DriverResponse> responseList, String sortByField) {
         return DriversListResponse.builder()
                 .drivers(responseList)
-                .sortedByField(field)
+                .sortedByField(sortByField)
                 .total(responseList.size())
                 .build();
     }
-    private DriversListResponse getAvailableListWithPaginationAndSort(Integer offset, Integer page, String field) {
-        Page<DriverResponse> responsePage = driverRepository.findAllByIsAvailableIsTrue(PageRequest.of(page, offset)
-                        .withSort(Sort.by(field)))
-                .map(driverDTOConverter::convertDriverToDriverResponse);
+    private DriversListResponse getListWithPaginationAndSort(Page<DriverResponse> responsePage, String sortByField) {
         return DriversListResponse.builder()
                 .drivers(responsePage.getContent())
                 .size(responsePage.getContent().size())
                 .page(responsePage.getPageable().getPageNumber())
                 .total((int) responsePage.getTotalElements())
-                .sortedByField(field)
-                .build();
-    }
-    private DriversListResponse getAvailableListWithPagination(Integer offset, Integer page) {
-        Page<DriverResponse> responsePage = driverRepository.findAllByIsAvailableIsTrue(PageRequest.of(page, offset))
-                .map(driverDTOConverter::convertDriverToDriverResponse);
-        return DriversListResponse.builder()
-                .drivers(responsePage.getContent())
-                .size(responsePage.getContent().size())
-                .page(responsePage.getPageable().getPageNumber())
-                .total((int) responsePage.getTotalElements())
+                .sortedByField(sortByField)
                 .build();
     }
     private void validateSortingParameter(String sortingParam) {

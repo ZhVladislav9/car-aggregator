@@ -14,5 +14,6 @@ public class DriverResponse {
     String surname;
     Double rating;
     String phone;
+    String email;
     Boolean isAvailable;
 }

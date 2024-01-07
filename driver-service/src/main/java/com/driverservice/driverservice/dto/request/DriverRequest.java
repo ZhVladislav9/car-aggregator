@@ -20,6 +20,9 @@ public class DriverRequest {
     @Min(value = 1,message = "Min value is 1")
     @Max(value = 5,message = "Max value is 5")
     Double rating;
+    @NotBlank(message = "{email is empty}")
+    @Email(message = "{email is not valid}")
+    String email;
     @NotBlank(message = "{phone is empty}")
     @Pattern(regexp = "^\\d{10,15}$", message = "{phone is not valid}")
     String phone;

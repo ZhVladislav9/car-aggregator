@@ -13,6 +13,8 @@ import java.util.Optional;
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, Integer> {
 
+
+    boolean existsByEmail(String email);
     boolean existsByPhone(String phone);
     List<Driver> findAllByIsAvailableIsTrue();
     List<Driver> findAllByIsAvailableIsTrue(Sort sort);

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface DriverService {
-    public DriversListResponse getDrivers();
     public DriverResponse getDriverById(Integer id);
     public DriverResponse updateDriver(Integer id, DriverRequest DriverRequest);
     public ResponseEntity<HttpStatus> deleteDriver(Integer id);

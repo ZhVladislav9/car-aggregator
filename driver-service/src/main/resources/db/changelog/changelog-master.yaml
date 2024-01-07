@@ -36,6 +36,12 @@ databaseChangeLog:
                     nullable: false
                     unique: true
               - column:
+                  name: email
+                  type: varchar(40)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
                   name: is_available
                   type: boolean
                   constraints:

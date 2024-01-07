@@ -22,6 +22,7 @@ public class Driver {
     String surname;
     Double rating;
     String phone;
+    String email;
     @Column(name = "is_available")
     Boolean isAvailable;
 }

@@ -35,16 +35,6 @@ public class PassengerServiceImpl implements PassengerService {
     @Autowired
     private PassengerDTOConverter passengerDTOConverter;
 
-    public PassengersListResponse getPassengers(){
-        List<PassengerResponse> passengers = passengerRepository.findAll()
-                .stream()
-                .map(passengerDTOConverter::convertPassengerToPassengerResponse)
-                .toList();
-        return PassengersListResponse.builder()
-                .passengers(passengers)
-                .total(passengers.size())
-                .build();
-    }
     public PassengerResponse getPassengerById(int id){
         return passengerDTOConverter.convertPassengerToPassengerResponse(passengerRepository.findById(id)
                 .orElseThrow(() -> new PassengerNotFoundException(id)));
@@ -82,49 +72,56 @@ public class PassengerServiceImpl implements PassengerService {
         passengerRepository.save(passenger);
         return passengerDTOConverter.convertPassengerToPassengerResponse(passenger);
     }
-    private PassengersListResponse getSortedPassengers(String sortByField) {
-        List<PassengerResponse> responseList = passengerRepository.findAll(Sort.by(sortByField))
+    public PassengersListResponse getPassengersList(Integer offset, Integer page, String sortByField) {
+        if (offset != null && page != null && sortByField != null) {
+            validatePaginationParameters(offset, page);
+            validateSortingParameter(sortByField);
+            return getListWithPaginationAndSort(passengerRepository.findAll(PageRequest.of(page, offset)
+                            .withSort(Sort.by(sortByField)))
+                    .map(passengerDTOConverter::convertPassengerToPassengerResponse), sortByField);
+        } else if (offset != null && page != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPagination(passengerRepository.findAll(PageRequest.of(page, offset))
+                    .map(passengerDTOConverter::convertPassengerToPassengerResponse));
+        } else if (sortByField != null) {
+            validateSortingParameter(sortByField);
+            return getListWithSort(passengerRepository.findAll(Sort.by(sortByField))
+                    .stream()
+                    .map(passengerDTOConverter::convertPassengerToPassengerResponse)
+                    .toList(), sortByField);
+        } else return getPassengers(passengerRepository.findAll()
                 .stream()
                 .map(passengerDTOConverter::convertPassengerToPassengerResponse)
-                .toList();
+                .toList());
+    }
+    public PassengersListResponse getPassengers(List<PassengerResponse> passengers){
+        return PassengersListResponse.builder()
+                .passengers(passengers)
+                .total(passengers.size())
+                .build();
+    }
+    private PassengersListResponse getListWithPagination(Page<PassengerResponse> responsePage) {
+        return PassengersListResponse.builder()
+                .passengers(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .build();
+    }
+    private PassengersListResponse getListWithSort(List<PassengerResponse> responseList, String sortByField) {
         return PassengersListResponse.builder()
                 .passengers(responseList)
                 .sortedByField(sortByField)
                 .total(responseList.size())
                 .build();
     }
-    public PassengersListResponse getPassengersList(Integer offset, Integer page, String sortByField) {
-        if (offset != null && page != null && sortByField != null) {
-            validatePaginationParameters(offset, page);
-            return getListWithPaginationAndSort(offset, page, sortByField);
-        } else if (offset != null && page != null) {
-            validatePaginationParameters(offset, page);
-            return getListWithPagination(offset, page);
-        } else if (sortByField != null) {
-            validateSortingParameter(sortByField);
-            return getSortedPassengers(sortByField);
-        } else return getPassengers();
-    }
-    private PassengersListResponse getListWithPaginationAndSort(Integer offset, Integer page, String field) {
-        Page<PassengerResponse> responsePage = passengerRepository.findAll(PageRequest.of(page, offset)
-                        .withSort(Sort.by(field)))
-                .map(passengerDTOConverter::convertPassengerToPassengerResponse);
+    private PassengersListResponse getListWithPaginationAndSort(Page<PassengerResponse> responsePage, String sortByField) {
         return PassengersListResponse.builder()
                 .passengers(responsePage.getContent())
                 .size(responsePage.getContent().size())
                 .page(responsePage.getPageable().getPageNumber())
                 .total((int) responsePage.getTotalElements())
-                .sortedByField(field)
-                .build();
-    }
-    private PassengersListResponse getListWithPagination(Integer offset, Integer page) {
-        Page<PassengerResponse> responsePage = passengerRepository.findAll(PageRequest.of(page, offset))
-                .map(passengerDTOConverter::convertPassengerToPassengerResponse);
-        return PassengersListResponse.builder()
-                .passengers(responsePage.getContent())
-                .size(responsePage.getContent().size())
-                .page(responsePage.getPageable().getPageNumber())
-                .total((int) responsePage.getTotalElements())
+                .sortedByField(sortByField)
                 .build();
     }
     private void dataIsUniqueCheck(PassengerRequest request) {

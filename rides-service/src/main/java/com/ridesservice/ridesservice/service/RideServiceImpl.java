@@ -21,7 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -37,7 +39,11 @@ public class RideServiceImpl implements RideService {
     private RideDTOConverter rideDTOConverter;
     @Transactional
     public RideResponse addRide(RideRequest request) {
-        Ride ride = rideDTOConverter.convertRideRequestToRide(request);
+        //Ride ride = rideDTOConverter.convertRideRequestToRide(request);
+        Ride ride = new Ride();
+        ride.setPassengerId(request.getPassengerId());
+        ride.setPickUpAddress(request.getPickUpAddress());
+        ride.setDestinationAddress(request.getDestinationAddress());
         ride.setStartDate(LocalDateTime.now());
         ride.setPrice(calculateCost());
         ride.setStatus(RideStatus.CREATED);
@@ -55,61 +61,7 @@ public class RideServiceImpl implements RideService {
     public RideResponse getRideById(Integer id) {
         return rideDTOConverter.convertRideToRideResponse(rideRepository.findById(id).orElseThrow());
     }
-    public RidesListResponse getPassengerRidesHistory(Integer offset, Integer page, String sortByField, Integer passengerId) {
-        if(!rideRepository.existsByPassengerId(passengerId))
-            throw new RideNotFoundException(NOT_FOUND_WITH_PASSENGER_ID_MESSAGE, passengerId);
-        if (offset != null && page != null && sortByField != null) {
-            validatePaginationParameters(offset, page);
-            return getListWithPaginationAndSort(rideRepository.findAllByPassengerId(passengerId, PageRequest.of(page, offset)
-                            .withSort(Sort.by(sortByField)))
-                    .map(rideDTOConverter::convertRideToRideResponse), sortByField);
-        } else if (offset != null && page != null) {
-            validatePaginationParameters(offset, page);
-            return getListWithPagination(rideRepository.findAllByPassengerId(passengerId, PageRequest.of(page, offset))
-                    .map(rideDTOConverter::convertRideToRideResponse));
-        } else if (sortByField != null) {
-            return getListWithSort(rideRepository.findAllByPassengerId(passengerId, Sort.by(sortByField))
-                    .stream()
-                    .map(rideDTOConverter::convertRideToRideResponse)
-                    .toList(), sortByField);
-        } else {
-            return getRides(rideRepository.findAllByPassengerId(passengerId)
-                    .stream()
-                    .map(rideDTOConverter::convertRideToRideResponse)
-                    .toList());
-        }
-    }
 
-    public RidesListResponse getRides(List<RideResponse> rides){
-        return RidesListResponse.builder()
-                .rides(rides)
-                .total(rides.size())
-                .build();
-    }
-    private RidesListResponse getListWithPagination(Page<RideResponse> responsePage) {
-        return RidesListResponse.builder()
-                .rides(responsePage.getContent())
-                .size(responsePage.getContent().size())
-                .page(responsePage.getPageable().getPageNumber())
-                .total((int) responsePage.getTotalElements())
-                .build();
-    }
-    private RidesListResponse getListWithSort(List<RideResponse> responseList, String sortByField) {
-        return RidesListResponse.builder()
-                .rides(responseList)
-                .sortedByField(sortByField)
-                .total(responseList.size())
-                .build();
-    }
-    private RidesListResponse getListWithPaginationAndSort(Page<RideResponse> responsePage, String sortByField) {
-        return RidesListResponse.builder()
-                .rides(responsePage.getContent())
-                .size(responsePage.getContent().size())
-                .page(responsePage.getPageable().getPageNumber())
-                .total((int) responsePage.getTotalElements())
-                .sortedByField(sortByField)
-                .build();
-    }
     public RideResponse acceptRide(Integer id){
         Ride ride = rideRepository.findById(id)
                 .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id));
@@ -194,6 +146,7 @@ public class RideServiceImpl implements RideService {
             return getListWithPagination(rideRepository.findAll(PageRequest.of(page, offset))
                     .map(rideDTOConverter::convertRideToRideResponse));
         } else if (sortByField != null) {
+            validateSortingParameter(sortByField);
             return getListWithSort(rideRepository.findAll(Sort.by(sortByField))
                     .stream()
                     .map(rideDTOConverter::convertRideToRideResponse)
@@ -202,6 +155,97 @@ public class RideServiceImpl implements RideService {
                 .stream()
                 .map(rideDTOConverter::convertRideToRideResponse)
                 .toList());
+    }
+    public RidesListResponse getPassengerRidesHistory(Integer offset, Integer page, String sortByField, Integer passengerId) {
+        if(!rideRepository.existsByPassengerId(passengerId))
+            throw new RideNotFoundException(NOT_FOUND_WITH_PASSENGER_ID_MESSAGE, passengerId);
+        if (offset != null && page != null && sortByField != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPaginationAndSort(rideRepository.findAllByPassengerId(passengerId, PageRequest.of(page, offset)
+                            .withSort(Sort.by(sortByField)))
+                    .map(rideDTOConverter::convertRideToRideResponse), sortByField);
+        } else if (offset != null && page != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPagination(rideRepository.findAllByPassengerId(passengerId, PageRequest.of(page, offset))
+                    .map(rideDTOConverter::convertRideToRideResponse));
+        } else if (sortByField != null) {
+            validateSortingParameter(sortByField);
+            return getListWithSort(rideRepository.findAllByPassengerId(passengerId, Sort.by(sortByField))
+                    .stream()
+                    .map(rideDTOConverter::convertRideToRideResponse)
+                    .toList(), sortByField);
+        } else {
+            return getRides(rideRepository.findAllByPassengerId(passengerId)
+                    .stream()
+                    .map(rideDTOConverter::convertRideToRideResponse)
+                    .toList());
+        }
+    }
+    public RidesListResponse getDriverRidesHistory(Integer offset, Integer page, String sortByField, Integer driverId) {
+        if(!rideRepository.existsByDriverId(driverId))
+            throw new RideNotFoundException(NOT_FOUND_WITH_DRIVER_ID_MESSAGE, driverId);
+        if (offset != null && page != null && sortByField != null) {
+            validatePaginationParameters(offset, page);
+            validateSortingParameter(sortByField);
+            return getListWithPaginationAndSort(rideRepository.findAllByDriverId(driverId, PageRequest.of(page, offset)
+                            .withSort(Sort.by(sortByField)))
+                    .map(rideDTOConverter::convertRideToRideResponse), sortByField);
+        } else if (offset != null && page != null) {
+            validatePaginationParameters(offset, page);
+            return getListWithPagination(rideRepository.findAllByDriverId(driverId, PageRequest.of(page, offset))
+                    .map(rideDTOConverter::convertRideToRideResponse));
+        } else if (sortByField != null) {
+            validateSortingParameter(sortByField);
+            return getListWithSort(rideRepository.findAllByDriverId(driverId, Sort.by(sortByField))
+                    .stream()
+                    .map(rideDTOConverter::convertRideToRideResponse)
+                    .toList(), sortByField);
+        } else {
+            return getRides(rideRepository.findAllByDriverId(driverId)
+                    .stream()
+                    .map(rideDTOConverter::convertRideToRideResponse)
+                    .toList());
+        }
+    }
+    public RidesListResponse getRides(List<RideResponse> rides){
+        return RidesListResponse.builder()
+                .rides(rides)
+                .total(rides.size())
+                .build();
+    }
+    private RidesListResponse getListWithPagination(Page<RideResponse> responsePage) {
+        return RidesListResponse.builder()
+                .rides(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .build();
+    }
+    private RidesListResponse getListWithSort(List<RideResponse> responseList, String sortByField) {
+        return RidesListResponse.builder()
+                .rides(responseList)
+                .sortedByField(sortByField)
+                .total(responseList.size())
+                .build();
+    }
+    private RidesListResponse getListWithPaginationAndSort(Page<RideResponse> responsePage, String sortByField) {
+        return RidesListResponse.builder()
+                .rides(responsePage.getContent())
+                .size(responsePage.getContent().size())
+                .page(responsePage.getPageable().getPageNumber())
+                .total((int) responsePage.getTotalElements())
+                .sortedByField(sortByField)
+                .build();
+    }
+    private void validateSortingParameter(String sortingParam) {
+        List<String> fieldNames = Arrays.stream(RideResponse.class.getDeclaredFields())
+                .map(Field::getName)
+                .toList();
+
+        if (!fieldNames.contains(sortingParam)) {
+            String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
+            throw new InvalidRequestException(errorMessage);
+        }
     }
     private void validatePaginationParameters(Integer offset, Integer page) {
         if(offset < 0) throw new InvalidRequestException("Offset parameter is invalid");

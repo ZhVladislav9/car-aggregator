@@ -7,9 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface PassengerService {
-    public PassengersListResponse getPassengers();
+    public PassengersListResponse getPassengers(List<PassengerResponse> passengers);
     public PassengerResponse getPassengerById(int id);
     public PassengerResponse updatePassenger(int id, PassengerRequest passengerRequest);
     public ResponseEntity<HttpStatus> deletePassenger(int id);

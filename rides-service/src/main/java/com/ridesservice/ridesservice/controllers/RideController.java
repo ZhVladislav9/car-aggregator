@@ -63,4 +63,12 @@ public class RideController {
             @PathVariable Integer  id){
         return rideServiceImpl.getPassengerRidesHistory(offset, page, sortByField, id);
     }
+    @GetMapping("/driver/{id}/history")
+    public RidesListResponse getHistoryByDriverId(
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false, name = "field") String sortByField,
+            @PathVariable Integer  id){
+        return rideServiceImpl.getDriverRidesHistory(offset, page, sortByField, id);
+    }
 }

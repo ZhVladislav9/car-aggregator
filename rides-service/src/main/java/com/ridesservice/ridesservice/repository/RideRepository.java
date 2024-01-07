@@ -17,4 +17,9 @@ public interface RideRepository extends JpaRepository<Ride,Integer> {
     List<Ride> findAllByPassengerId(Integer passengerId, Sort sort);
     boolean existsByPassengerId(Integer passengerId);
 
+    List<Ride> findAllByDriverId(Integer driverId);
+    Page<Ride> findAllByDriverId(Integer driverId, Pageable pageable);
+    List<Ride> findAllByDriverId(Integer driverId, Sort sort);
+    boolean existsByDriverId(Integer driverId);
+
 }
