@@ -12,8 +12,6 @@ import com.ridesservice.ridesservice.repository.RideRepository;
 import com.ridesservice.ridesservice.service.interfaces.RideService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -30,16 +28,13 @@ import java.util.Random;
 import static com.ridesservice.ridesservice.util.Messages.*;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class RideServiceImpl implements RideService {
-    @Autowired
-    private RideRepository rideRepository;
-    @Autowired
-    private RideDTOConverter rideDTOConverter;
+    private final RideRepository rideRepository;
+    private final RideDTOConverter rideDTOConverter;
+    private final PromoCodeServiceImpl promoCodeService;
     @Transactional
     public RideResponse addRide(RideRequest request) {
-        //Ride ride = rideDTOConverter.convertRideRequestToRide(request);
         Ride ride = new Ride();
         ride.setPassengerId(request.getPassengerId());
         ride.setPickUpAddress(request.getPickUpAddress());
@@ -61,7 +56,14 @@ public class RideServiceImpl implements RideService {
     public RideResponse getRideById(Integer id) {
         return rideDTOConverter.convertRideToRideResponse(rideRepository.findById(id).orElseThrow());
     }
-
+    public RideResponse enterPromoCode(Integer id, String promoCodeName){
+        Ride ride = rideRepository.findById(id)
+                .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id));
+        Double coefficient = promoCodeService.getCoefficientByPromoCodeId(promoCodeName);
+        ride.setPrice((ride.getPrice() * coefficient * 100.0) / 100.0);
+        rideRepository.save(ride);
+        return rideDTOConverter.convertRideToRideResponse(ride);
+    }
     public RideResponse acceptRide(Integer id){
         Ride ride = rideRepository.findById(id)
                 .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id));
@@ -109,24 +111,12 @@ public class RideServiceImpl implements RideService {
     }
     @Transactional
     public RideResponse updateRide(Integer id, RideRequest rideRequest){
-        Ride editedRide = rideRepository.findById(id)
-                .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id));
+        if(!rideRepository.existsById(id))
+            throw new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id);
         Ride ride = rideDTOConverter.convertRideRequestToRide(rideRequest);
-
-        if(ride.getPickUpAddress() != null)
-            editedRide.setPickUpAddress(ride.getPickUpAddress());
-        if(ride.getDestinationAddress() != null)
-            editedRide.setDestinationAddress(ride.getDestinationAddress());
-        if(ride.getStartDate() != null)
-            editedRide.setStartDate(ride.getStartDate());
-        if(ride.getPrice() != null)
-            editedRide.setPrice(ride.getPrice());
-        if(ride.getPassengerId() != null)
-            editedRide.setPassengerId(ride.getPassengerId());
-        if(ride.getDriverId() != null)
-            editedRide.setDriverId(ride.getDriverId());
-        rideRepository.save(editedRide);
-        return rideDTOConverter.convertRideToRideResponse(editedRide);
+        ride.setId(id);
+        rideRepository.save(ride);
+        return rideDTOConverter.convertRideToRideResponse(ride);
     }
     @Transactional
     public ResponseEntity<HttpStatus> deleteRide(Integer id){

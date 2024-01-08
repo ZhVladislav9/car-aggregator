@@ -54,6 +54,22 @@ databaseChangeLog:
                   type: varchar(255)
                   constraints:
                     nullable: false
+        - createTable:
+            tableName: promo_codes
+            columns:
+              - column:
+                  name: name
+                  type: varchar(20)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: coefficient
+                  type: DOUBLE
+                  constraints:
+                    nullable: false
       rollback:
         - dropTable:
             tableName: rides
+        - dropTable:
+            tableName: promo_codes

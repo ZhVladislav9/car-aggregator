@@ -11,6 +11,7 @@ import com.passengerservice.passengerservice.models.Passenger;
 import com.passengerservice.passengerservice.repository.PassengerRepository;
 import com.passengerservice.passengerservice.service.interfaces.PassengerService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,12 +29,10 @@ import java.lang.reflect.Field;
 import static com.passengerservice.passengerservice.util.Messages.*;
 
 @Service
-@Slf4j
+@RequiredArgsConstructor
 public class PassengerServiceImpl implements PassengerService {
-    @Autowired
-    private PassengerRepository passengerRepository;
-    @Autowired
-    private PassengerDTOConverter passengerDTOConverter;
+    private final PassengerRepository passengerRepository;
+    private final PassengerDTOConverter passengerDTOConverter;
 
     public PassengerResponse getPassengerById(int id){
         return passengerDTOConverter.convertPassengerToPassengerResponse(passengerRepository.findById(id)
@@ -42,22 +41,14 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Transactional
     public PassengerResponse updatePassenger(int id, PassengerRequest passengerRequest){
-        Passenger editedPassenger = passengerRepository.findById(id)
-                .orElseThrow(() -> new PassengerNotFoundException(id));
+        if(!passengerRepository.existsById(id))
+            throw new PassengerNotFoundException(id);
         Passenger passenger = passengerDTOConverter.convertPassengerRequestToPassenger(passengerRequest);
-
-        if(passenger.getName() != null)
-            editedPassenger.setName(passenger.getName());
-        if(passenger.getSurname() != null)
-            editedPassenger.setSurname(passenger.getSurname());
-        if(passenger.getRating() != null)
-            editedPassenger.setRating(passenger.getRating());
-        if(passenger.getPhone() != null)
-            editedPassenger.setPhone(passenger.getPhone());
-        if(passenger.getEmail() != null)
-            editedPassenger.setEmail(passenger.getEmail());
-        passengerRepository.save(editedPassenger);
-        return passengerDTOConverter.convertPassengerToPassengerResponse(editedPassenger);
+        emailUpdateCheck(id, passenger.getEmail());
+        phoneUpdateCheck(id, passenger.getPhone());
+        passenger.setId(id);
+        passengerRepository.save(passenger);
+        return passengerDTOConverter.convertPassengerToPassengerResponse(passenger);
     }
     @Transactional
     public ResponseEntity<HttpStatus> deletePassenger(int id){
@@ -67,10 +58,37 @@ public class PassengerServiceImpl implements PassengerService {
     }
     @Transactional
     public PassengerResponse addPassenger(PassengerRequest passengerRequest){
-        dataIsUniqueCheck(passengerRequest);
+        emailIsUniqueCheck(passengerRequest.getEmail());
+        phoneIsUniqueCheck(passengerRequest.getPhone());
         Passenger passenger = passengerDTOConverter.convertPassengerRequestToPassenger(passengerRequest);
         passengerRepository.save(passenger);
         return passengerDTOConverter.convertPassengerToPassengerResponse(passenger);
+    }
+    private void emailUpdateCheck(Integer id, String email){
+        Passenger passenger = getPassengerEntityById(id);
+        if(!passenger.getEmail().equals(email))
+            emailIsUniqueCheck(email);
+    }
+    private void phoneUpdateCheck(Integer id, String phone){
+        Passenger passenger = getPassengerEntityById(id);
+        if(!passenger.getPhone().equals(phone))
+            phoneIsUniqueCheck(phone);
+    }
+    private void emailIsUniqueCheck(String email) {
+        if (passengerRepository.existsByEmail(email)) {
+            throw new AlreadyExistsException(
+                    String.format(PASSENGER_WITH_EMAIL_EXISTS_MESSAGE, email));
+        }
+    }
+    private void phoneIsUniqueCheck(String phone){
+        if (passengerRepository.existsByPhone(phone)) {
+            throw new AlreadyExistsException(
+                    String.format(PASSENGER_WITH_PHONE_EXISTS_MESSAGE, phone));
+        }
+    }
+    private Passenger getPassengerEntityById(Integer id) {
+        return passengerRepository.findById(id)
+                .orElseThrow(() -> new PassengerNotFoundException(id));
     }
     public PassengersListResponse getPassengersList(Integer offset, Integer page, String sortByField) {
         if (offset != null && page != null && sortByField != null) {
@@ -123,27 +141,6 @@ public class PassengerServiceImpl implements PassengerService {
                 .total((int) responsePage.getTotalElements())
                 .sortedByField(sortByField)
                 .build();
-    }
-    private void dataIsUniqueCheck(PassengerRequest request) {
-        var errors = new HashMap<String, String>();
-
-        if (passengerRepository.existsByEmail(request.getEmail())) {
-            log.error("Passenger with email {} exists", request.getEmail());
-            errors.put(
-                    "email",
-                    String.format(PASSENGER_WITH_EMAIL_EXISTS_MESSAGE, request.getEmail())
-            );
-        }
-        if (passengerRepository.existsByPhone(request.getPhone())) {
-            log.error("Passenger with phone {} exists", request.getPhone());
-            errors.put(
-                    "phone",
-                    String.format(PASSENGER_WITH_PHONE_EXISTS_MESSAGE, request.getPhone())
-            );
-        }
-        if (!errors.isEmpty()) {
-            throw new AlreadyExistsException(errors);
-        }
     }
     private void validateSortingParameter(String sortingParam) {
         List<String> fieldNames = Arrays.stream(PassengerResponse.class.getDeclaredFields())

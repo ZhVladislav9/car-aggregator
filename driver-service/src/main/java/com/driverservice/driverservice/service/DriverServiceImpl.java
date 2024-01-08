@@ -12,8 +12,6 @@ import com.driverservice.driverservice.repository.DriverRepository;
 import com.driverservice.driverservice.service.interfaces.DriverService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,19 +21,15 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.driverservice.driverservice.util.Messages.*;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class DriverServiceImpl implements DriverService {
-    @Autowired
-    private DriverRepository driverRepository;
-    @Autowired
-    private DriverDTOConverter driverDTOConverter;
+    private final DriverRepository driverRepository;
+    private final DriverDTOConverter driverDTOConverter;
 
 
     public DriverResponse getDriverById(Integer id){
@@ -45,24 +39,14 @@ public class DriverServiceImpl implements DriverService {
 
     @Transactional
     public DriverResponse updateDriver(Integer id, DriverRequest driverRequest){
-        Driver editedDriver = driverRepository.findById(id)
-                .orElseThrow(() -> new DriverNotFoundException(id));
+        if(!driverRepository.existsById(id))
+            throw new DriverNotFoundException(id);
         Driver driver = driverDTOConverter.convertDriverRequestToDriver(driverRequest);
-
-        if(driver.getName() != null)
-            editedDriver.setName(driver.getName());
-        if(driver.getSurname() != null)
-            editedDriver.setSurname(driver.getSurname());
-        if(driver.getRating() != null)
-            editedDriver.setRating(driver.getRating());
-        if(driver.getPhone() != null)
-            editedDriver.setPhone(driver.getPhone());
-        if(driver.getEmail() != null)
-            editedDriver.setEmail(driver.getEmail());
-        if(driver.getIsAvailable() != null)
-            editedDriver.setIsAvailable(driver.getIsAvailable());
-        driverRepository.save(editedDriver);
-        return driverDTOConverter.convertDriverToDriverResponse(editedDriver);
+        emailUpdateCheck(id, driverRequest.getEmail());
+        phoneUpdateCheck(id, driverRequest.getPhone());
+        driver.setId(id);
+        driverRepository.save(driver);
+        return driverDTOConverter.convertDriverToDriverResponse(driver);
     }
     @Transactional
     public ResponseEntity<HttpStatus> deleteDriver(Integer id){
@@ -72,7 +56,8 @@ public class DriverServiceImpl implements DriverService {
     }
     @Transactional
     public DriverResponse addDriver(DriverRequest driverRequest){
-        dataIsUniqueCheck(driverRequest);
+        phoneIsUniqueCheck(driverRequest.getPhone());
+        emailIsUniqueCheck(driverRequest.getEmail());
         Driver driver = driverDTOConverter.convertDriverRequestToDriver(driverRequest);
         driverRepository.save(driver);
         return driverDTOConverter.convertDriverToDriverResponse(driver);
@@ -87,25 +72,26 @@ public class DriverServiceImpl implements DriverService {
         driverRepository.save(driver);
         return driverDTOConverter.convertDriverToDriverResponse(driver);
     }
-
-    private void dataIsUniqueCheck(DriverRequest request) {
-        var errors = new HashMap<String, String>();
-        if (driverRepository.existsByEmail(request.getEmail())) {
-            log.error("Driver with email {} exists", request.getEmail());
-            errors.put(
-                    "email",
-                    String.format(DRIVER_WITH_EMAIL_EXISTS_MESSAGE, request.getEmail())
-            );
+    private void emailUpdateCheck(Integer id, String email){
+        Driver driver = getDriverEntityById(id);
+        if(!driver.getEmail().equals(email))
+            emailIsUniqueCheck(email);
+    }
+    private void phoneUpdateCheck(Integer id, String phone){
+        Driver driver = getDriverEntityById(id);
+        if(!driver.getPhone().equals(phone))
+            phoneIsUniqueCheck(phone);
+    }
+    private void emailIsUniqueCheck(String email) {
+        if (driverRepository.existsByEmail(email)) {
+            throw new AlreadyExistsException(
+                    String.format(DRIVER_WITH_EMAIL_EXISTS_MESSAGE, email));
         }
-        if (driverRepository.existsByPhone(request.getPhone())) {
-            log.error("Driver with phone {} is exists", request.getPhone());
-            errors.put(
-                    "phone",
-                    String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE, request.getPhone())
-            );
-        }
-        if (!errors.isEmpty()) {
-            throw new AlreadyExistsException(errors);
+    }
+    private void phoneIsUniqueCheck(String phone){
+        if (driverRepository.existsByPhone(phone)) {
+            throw new AlreadyExistsException(
+                    String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE, phone));
         }
     }
     public DriversListResponse getDriversList(Integer offset, Integer page, String sortByField) {

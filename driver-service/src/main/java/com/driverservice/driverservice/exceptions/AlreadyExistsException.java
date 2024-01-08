@@ -8,10 +8,7 @@ import static com.driverservice.driverservice.util.Messages.*;
 
 @Getter
 public class AlreadyExistsException extends RuntimeException{
-    private final Map<String, String> errors;
-
-    public AlreadyExistsException(Map<String, String> errors) {
-        super(DRIVER_ALREADY_EXISTS_MESSAGE);
-        this.errors = errors;
+    public AlreadyExistsException(String message) {
+        super(message);
     }
 }

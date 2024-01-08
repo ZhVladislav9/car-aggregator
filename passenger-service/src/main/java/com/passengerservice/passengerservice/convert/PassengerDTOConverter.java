@@ -3,15 +3,16 @@ package com.passengerservice.passengerservice.convert;
 import com.passengerservice.passengerservice.dto.request.PassengerRequest;
 import com.passengerservice.passengerservice.dto.response.PassengerResponse;
 import com.passengerservice.passengerservice.models.Passenger;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
 @Component
+@RequiredArgsConstructor
 public class PassengerDTOConverter {
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     public PassengerResponse convertPassengerToPassengerResponse(Passenger passenger){
         return modelMapper.map(passenger,PassengerResponse.class);

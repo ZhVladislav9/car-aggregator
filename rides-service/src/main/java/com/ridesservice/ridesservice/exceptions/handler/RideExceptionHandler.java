@@ -3,6 +3,7 @@ package com.ridesservice.ridesservice.exceptions.handler;
 import com.ridesservice.ridesservice.dto.response.ExceptionResponse;
 import com.ridesservice.ridesservice.dto.response.ValidationExceptionResponse;
 import com.ridesservice.ridesservice.exceptions.AlreadyExistsException;
+import com.ridesservice.ridesservice.exceptions.PromoCodeNotFoundException;
 import com.ridesservice.ridesservice.exceptions.RideNotFoundException;
 import com.ridesservice.ridesservice.exceptions.InvalidRequestException;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,10 @@ import static com.ridesservice.ridesservice.util.Messages.*;
 @ControllerAdvice
 public class RideExceptionHandler {
     @ExceptionHandler(value = {RideNotFoundException.class})
-    public ResponseEntity<Object> handleNotFoundException(RideNotFoundException notFoundException) {
+    public ResponseEntity<Object> handleNotFoundException(RideNotFoundException rideNotFoundException) {
         ExceptionResponse response =
                 new ExceptionResponse(HttpStatus.NOT_FOUND,
-                        notFoundException.getMessage()
+                        rideNotFoundException.getMessage()
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
@@ -45,7 +46,14 @@ public class RideExceptionHandler {
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
-
+    @ExceptionHandler(PromoCodeNotFoundException.class)
+    public ResponseEntity<Object> handlePromoCodeNotFoundException(PromoCodeNotFoundException promoCodeNotFoundException) {
+        ExceptionResponse response =
+                new ExceptionResponse(HttpStatus.NOT_FOUND,
+                        promoCodeNotFoundException.getMessage()
+                );
+        return new ResponseEntity<>(response, response.getStatus());
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
         var errors = new HashMap<String, String>();

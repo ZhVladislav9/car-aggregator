@@ -8,10 +8,8 @@ import static com.passengerservice.passengerservice.util.Messages.*;
 
 @Getter
 public class AlreadyExistsException extends RuntimeException{
-    private final Map<String, String> errors;
 
-    public AlreadyExistsException(Map<String, String> errors) {
-        super(PASSENGER_ALREADY_EXISTS_MESSAGE);
-        this.errors = errors;
+    public AlreadyExistsException(String message) {
+        super(message);
     }
 }

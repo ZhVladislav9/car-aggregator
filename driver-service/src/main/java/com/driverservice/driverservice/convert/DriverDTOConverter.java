@@ -3,15 +3,16 @@ package com.driverservice.driverservice.convert;
 import com.driverservice.driverservice.dto.request.DriverRequest;
 import com.driverservice.driverservice.dto.response.DriverResponse;
 import com.driverservice.driverservice.models.Driver;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
 @Component
+@RequiredArgsConstructor
 public class DriverDTOConverter {
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     public DriverResponse convertDriverToDriverResponse(Driver driver){
         return modelMapper.map(driver,DriverResponse.class);

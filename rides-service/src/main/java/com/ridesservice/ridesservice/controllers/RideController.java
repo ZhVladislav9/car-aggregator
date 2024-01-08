@@ -5,6 +5,7 @@ import com.ridesservice.ridesservice.dto.response.RideResponse;
 import com.ridesservice.ridesservice.dto.response.RidesListResponse;
 import com.ridesservice.ridesservice.service.RideServiceImpl;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/ride")
+@RequiredArgsConstructor
 public class RideController {
-
-    @Autowired
-    private RideServiceImpl rideServiceImpl;
+    private final RideServiceImpl rideServiceImpl;
     @GetMapping("/all")
     public RidesListResponse gerRides(@RequestParam(required = false) Integer offset,
                                       @RequestParam(required = false) Integer page,
@@ -28,7 +28,7 @@ public class RideController {
     }
 
     @PutMapping
-    public RideResponse updateRide(@RequestParam Integer id, @RequestBody RideRequest rideRequest){
+    public RideResponse updateRide(@RequestParam Integer id, @RequestBody @Valid RideRequest rideRequest){
         return rideServiceImpl.updateRide(id, rideRequest);
     }
     @DeleteMapping
@@ -38,6 +38,10 @@ public class RideController {
     @PostMapping
     public RideResponse addRide(@RequestBody @Valid RideRequest rideRequest){
         return rideServiceImpl.addRide(rideRequest);
+    }
+    @PutMapping("/{id}/promo-code")
+    public RideResponse enterPromoCode(@PathVariable Integer id, @RequestParam(name = "promoCode") String promoCodeName){
+        return rideServiceImpl.enterPromoCode(id, promoCodeName);
     }
     @PutMapping("/{id}/finish")
     public RideResponse finishRide(@PathVariable Integer id){

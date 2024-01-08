@@ -17,8 +17,7 @@ import java.util.List;
 @RequestMapping("/driver")
 @RequiredArgsConstructor
 public class DriverController {
-    @Autowired
-    private DriverServiceImpl driverServiceImpl;
+    private final DriverServiceImpl driverServiceImpl;
     @GetMapping("/all")
     public DriversListResponse gerDrivers(
             @RequestParam(required = false) Integer offset,
@@ -37,7 +36,7 @@ public class DriverController {
         return driverServiceImpl.getAvailableDriversList(offset, page, sortByField);
     }
     @PutMapping
-    public DriverResponse updateDriver(@RequestParam Integer id, @RequestBody DriverRequest driverRequest){
+    public DriverResponse updateDriver(@RequestParam Integer id, @RequestBody @Valid DriverRequest driverRequest){
         return driverServiceImpl.updateDriver(id, driverRequest);
     }
     @DeleteMapping

@@ -18,13 +18,7 @@ public class RideRequest {
     String pickUpAddress;
     @NotBlank(message = "Destination address is empty")
     String destinationAddress;
-//    @Min(value = 1,message = "Min value is 1")
-//    @NotNull(message = "Price is empty")
-//    Double price;
     @Range(min = 1, message = "Min value is 1")
     @NotNull(message = "Passenger id is empty")
     Integer passengerId;
-//    @Range(min = 1, message = "Min value is 1")
-//    @NotNull(message = "Driver id is empty")
-//    Integer driverId;
 }
