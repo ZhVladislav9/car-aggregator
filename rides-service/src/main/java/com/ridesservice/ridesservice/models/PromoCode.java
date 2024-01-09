@@ -1,9 +1,6 @@
 package com.ridesservice.ridesservice.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -17,6 +14,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PromoCode {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer id;
     String name;
     @Column(columnDefinition = "numeric(3,2)")
     Double coefficient;

@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PromoCodeDTO {
+public class PromoCodeRequest {
     @NotBlank(message = "{PromoCode name is empty}")
     String name;
     @NotNull(message = "{PromoCode coefficient is empty}")

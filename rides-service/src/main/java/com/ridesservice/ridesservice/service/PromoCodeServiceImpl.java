@@ -1,12 +1,13 @@
 package com.ridesservice.ridesservice.service;
 
 import com.ridesservice.ridesservice.convert.PromoCodeDTOConverter;
-import com.ridesservice.ridesservice.dto.request.PromoCodeDTO;
+import com.ridesservice.ridesservice.dto.request.PromoCodeRequest;
+import com.ridesservice.ridesservice.dto.response.PromoCodeListResponse;
+import com.ridesservice.ridesservice.dto.response.PromoCodeResponse;
 import com.ridesservice.ridesservice.exceptions.AlreadyExistsException;
 import com.ridesservice.ridesservice.exceptions.InvalidRequestException;
 import com.ridesservice.ridesservice.exceptions.PromoCodeNotFoundException;
 import com.ridesservice.ridesservice.models.PromoCode;
-import com.ridesservice.ridesservice.models.PromoCodesDTOList;
 import com.ridesservice.ridesservice.repository.PromoCodeRepository;
 import com.ridesservice.ridesservice.service.interfaces.PromoCodeService;
 import jakarta.transaction.Transactional;
@@ -25,64 +26,73 @@ public class PromoCodeServiceImpl implements PromoCodeService {
     private final PromoCodeRepository promoCodeRepository;
     private final PromoCodeDTOConverter promoCodeDTOConverter;
 
-    public Double getCoefficientByPromoCodeId(String id){
-        PromoCodeDTO promoCodeDTO = getPromoCodeById(id);
-        return promoCodeDTO.getCoefficient();
-    }
-    public PromoCodeDTO getPromoCodeById(String id){
+    public Double getCoefficientByPromoCodeName(String name){
+        if(!promoCodeRepository.existsByName(name)){
+            throw new PromoCodeNotFoundException(
+                    String.format(PROMO_CODE_NOT_FOUND_WITH_NAME_MESSAGE, name));
+        }
         return promoCodeDTOConverter
-                .convertPromoCodeToPromoCodeDTO(promoCodeRepository.findById(id)
+                .convertPromoCodeToPromoCodeResponse(promoCodeRepository.findByName(name))
+                .getCoefficient();
+    }
+    public PromoCodeResponse getPromoCodeById(Integer id){
+        return promoCodeDTOConverter
+                .convertPromoCodeToPromoCodeResponse(promoCodeRepository.findById(id)
                         .orElseThrow(() -> new PromoCodeNotFoundException(
                                 String.format(PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE, id))));
     }
-    public PromoCodesDTOList getAll(){
-        List<PromoCodeDTO> codes = promoCodeRepository.findAll()
+    public PromoCodeListResponse getAll(){
+        List<PromoCodeResponse> codes = promoCodeRepository.findAll()
                 .stream()
-                .map(promoCodeDTOConverter::convertPromoCodeToPromoCodeDTO)
+                .map(promoCodeDTOConverter::convertPromoCodeToPromoCodeResponse)
                 .toList();
-        return PromoCodesDTOList.builder()
+        return PromoCodeListResponse.builder()
                 .codes(codes)
                 .build();
     }
     @Transactional
-    public PromoCodeDTO addPromoCode(PromoCodeDTO promoCodeDTO){
-        dataIsUniqueCheck(promoCodeDTO.getName());
-        promoCodeRepository.save(promoCodeDTOConverter.convertPromoCodeDTOToPromoCode(promoCodeDTO));
-        return promoCodeDTO;
+    public PromoCodeResponse addPromoCode(PromoCodeRequest promoCodeRequest){
+        dataIsUniqueCheck(promoCodeRequest.getName());
+        return promoCodeDTOConverter.convertPromoCodeToPromoCodeResponse(
+                promoCodeRepository
+                        .save(promoCodeDTOConverter
+                                .convertPromoCodeRequestToPromoCode(promoCodeRequest)));
     }
     @Transactional
-    public ResponseEntity<HttpStatus> deletePromoCode(String name) {
-        checkExistence(name);
-        promoCodeRepository.deleteById(name);
+    public ResponseEntity<HttpStatus> deletePromoCode(Integer id) {
+        checkExistence(id);
+        promoCodeRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
     @Transactional
-    public PromoCodeDTO updatePromoCode(String id, PromoCodeDTO promoCodeDTO){
+    public PromoCodeResponse updatePromoCode(Integer id, PromoCodeRequest promoCodeRequest){
         if(!promoCodeRepository.existsById(id))
             throw new PromoCodeNotFoundException(String.format(PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE, id));
-        PromoCode promoCode = promoCodeDTOConverter.convertPromoCodeDTOToPromoCode(promoCodeDTO);
-        nameUpdateCheck(id, promoCodeDTO);
+        PromoCode promoCode = promoCodeDTOConverter.convertPromoCodeRequestToPromoCode(promoCodeRequest);
+        nameUpdateCheck(id, promoCodeRequest);
+        promoCode.setId(id);
         promoCodeRepository.save(promoCode);
-        return promoCodeDTO;
+        return promoCodeDTOConverter.convertPromoCodeToPromoCodeResponse(promoCode);
     }
-    private void nameUpdateCheck(String id, PromoCodeDTO promoCodeDTO){
+    private void nameUpdateCheck(Integer id, PromoCodeRequest promoCodeRequest){
         PromoCode promoCode = getPromoCodeEntityById(id);
-        if(!promoCode.getName().equals(promoCode.getName()))
-            dataIsUniqueCheck(promoCodeDTO.getName());
+        if(!promoCode.getName().equals(promoCodeRequest.getName()))
+            dataIsUniqueCheck(promoCodeRequest.getName());
     }
     private void dataIsUniqueCheck(String name) {
-        if (promoCodeRepository.existsById(name)) {
+        if (promoCodeRepository.existsByName(name)) {
             throw new AlreadyExistsException(
                     String.format(PROMO_CODE_WITH_NAME_EXISTS_MESSAGE, name));
         }
     }
-    private void checkExistence(String name) {
-        if (!promoCodeRepository.existsById(name)) {
+    private void checkExistence(Integer id) {
+        if (!promoCodeRepository.existsById(id)) {
             throw new InvalidRequestException("PromoCode notFound");
         }
     }
-    private PromoCode getPromoCodeEntityById(String id) {
+    private PromoCode getPromoCodeEntityById(Integer id) {
         return promoCodeRepository.findById(id)
-                .orElseThrow(() -> new PromoCodeNotFoundException(String.format(PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE, id)));
+                .orElseThrow(() -> new PromoCodeNotFoundException(
+                        String.format(PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE, id)));
     }
 }

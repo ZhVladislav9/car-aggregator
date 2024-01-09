@@ -58,10 +58,16 @@ databaseChangeLog:
             tableName: promo_codes
             columns:
               - column:
+                  name: id
+                  type: INTEGER
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
                   name: name
                   type: varchar(20)
                   constraints:
-                    primaryKey: true
                     nullable: false
               - column:
                   name: coefficient

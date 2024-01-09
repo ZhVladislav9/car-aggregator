@@ -1,7 +1,8 @@
 package com.ridesservice.ridesservice.controllers;
 
-import com.ridesservice.ridesservice.dto.request.PromoCodeDTO;
-import com.ridesservice.ridesservice.models.PromoCodesDTOList;
+import com.ridesservice.ridesservice.dto.request.PromoCodeRequest;
+import com.ridesservice.ridesservice.dto.response.PromoCodeListResponse;
+import com.ridesservice.ridesservice.dto.response.PromoCodeResponse;
 import com.ridesservice.ridesservice.service.PromoCodeServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,23 +18,23 @@ public class PromoCodeController {
     private final PromoCodeServiceImpl promoCodeService;
 
     @GetMapping
-    public PromoCodeDTO getPromoCodeById(@RequestParam String name){
-        return promoCodeService.getPromoCodeById(name);
+    public PromoCodeResponse getPromoCodeById(@RequestParam Integer id){
+        return promoCodeService.getPromoCodeById(id);
     }
     @GetMapping("/all")
-    public PromoCodesDTOList getAll() {
+    public PromoCodeListResponse getAll() {
         return promoCodeService.getAll();
     }
     @PostMapping
-    public PromoCodeDTO addPromoCode(@RequestBody @Valid PromoCodeDTO promoCodeDTO){
-        return promoCodeService.addPromoCode(promoCodeDTO);
+    public PromoCodeResponse addPromoCode(@RequestBody @Valid PromoCodeRequest promoCodeRequest){
+        return promoCodeService.addPromoCode(promoCodeRequest);
     }
     @PutMapping
-    public PromoCodeDTO updatePromoCode(@RequestParam String name, @RequestBody @Valid PromoCodeDTO promoCodeDTO){
-        return promoCodeService.updatePromoCode(name, promoCodeDTO);
+    public PromoCodeResponse updatePromoCode(@RequestParam Integer id, @RequestBody @Valid PromoCodeRequest promoCodeRequest){
+        return promoCodeService.updatePromoCode(id, promoCodeRequest);
     }
     @DeleteMapping
-    public ResponseEntity<HttpStatus> deletePromoCode(@RequestParam String name){
-        return promoCodeService.deletePromoCode(name);
+    public ResponseEntity<HttpStatus> deletePromoCode(@RequestParam Integer id){
+        return promoCodeService.deletePromoCode(id);
     }
 }

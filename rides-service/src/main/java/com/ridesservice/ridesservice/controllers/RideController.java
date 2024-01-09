@@ -39,8 +39,8 @@ public class RideController {
         return rideServiceImpl.addRide(rideRequest);
     }
     @PutMapping("/{id}/promo-code")
-    public RideResponse enterPromoCode(@PathVariable Integer id, @RequestParam(name = "promoCode") String promoCodeName){
-        return rideServiceImpl.enterPromoCode(id, promoCodeName);
+    public RideResponse enterPromoCode(@PathVariable Integer id, @RequestParam String promoCode){
+        return rideServiceImpl.enterPromoCode(id, promoCode);
     }
     @PutMapping("/{id}/finish")
     public RideResponse finishRide(@PathVariable Integer id){

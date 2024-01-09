@@ -1,6 +1,5 @@
-package com.ridesservice.ridesservice.models;
+package com.ridesservice.ridesservice.dto.response;
 
-import com.ridesservice.ridesservice.dto.request.PromoCodeDTO;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +10,6 @@ import java.util.List;
 @Getter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PromoCodesDTOList {
-    List<PromoCodeDTO> codes;
+public class PromoCodeListResponse {
+    List<PromoCodeResponse> codes;
 }

@@ -179,7 +179,7 @@ public class DriverServiceImpl implements DriverService {
         }
     }
     private void validatePaginationParameters(Integer offset, Integer page) {
-        if(offset < 0) throw new InvalidRequestException("Offset parameter is invalid");
+        if(offset <= 0) throw new InvalidRequestException("Offset parameter is invalid");
         if(page < 0)throw new InvalidRequestException("Page parameter is invalid");
     }
 }

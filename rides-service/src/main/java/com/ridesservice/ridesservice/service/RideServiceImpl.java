@@ -54,12 +54,13 @@ public class RideServiceImpl implements RideService {
     }
 
     public RideResponse getRideById(Integer id) {
-        return rideDTOConverter.convertRideToRideResponse(rideRepository.findById(id).orElseThrow());
+        return rideDTOConverter.convertRideToRideResponse(rideRepository.findById(id)
+                .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id)));
     }
     public RideResponse enterPromoCode(Integer id, String promoCodeName){
         Ride ride = rideRepository.findById(id)
                 .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id));
-        Double coefficient = promoCodeService.getCoefficientByPromoCodeId(promoCodeName);
+        Double coefficient = promoCodeService.getCoefficientByPromoCodeName(promoCodeName);
         ride.setPrice((ride.getPrice() * coefficient * 100.0) / 100.0);
         rideRepository.save(ride);
         return rideDTOConverter.convertRideToRideResponse(ride);
@@ -71,7 +72,6 @@ public class RideServiceImpl implements RideService {
             throw new InvalidRequestException("status is invalid");
         }
         ride.setStatus(RideStatus.ACCEPTED);
-        ride.setFinishDate(LocalDateTime.now());
         rideRepository.save(ride);
         return rideDTOConverter.convertRideToRideResponse(ride);
     }
@@ -89,7 +89,7 @@ public class RideServiceImpl implements RideService {
     public RideResponse rejectRide(Integer id){
         Ride ride = rideRepository.findById(id)
                 .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id));
-        if (ride.getStatus() != RideStatus.CREATED) {
+        if (ride.getStatus() != RideStatus.CREATED && ride.getStatus() != RideStatus.ACCEPTED) {
             throw new InvalidRequestException("status is invalid");
         }
         ride.setStatus(RideStatus.REJECTED);
@@ -100,12 +100,12 @@ public class RideServiceImpl implements RideService {
 
     @Transactional
     public RideResponse updatePrice(Integer id, Double price){
+        validatePrice(price);
         Ride ride = rideRepository.findById(id)
                 .orElseThrow(() -> new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id));
         if(price != null){
             ride.setPrice(price);
         } else throw new InvalidRequestException("price is empty");
-
         rideRepository.save(ride);
         return rideDTOConverter.convertRideToRideResponse(ride);
     }
@@ -128,6 +128,7 @@ public class RideServiceImpl implements RideService {
     public RidesListResponse getRidesList(Integer offset, Integer page, String sortByField) {
         if (offset != null && page != null && sortByField != null) {
             validatePaginationParameters(offset, page);
+            validateSortingParameter(sortByField);
             return getListWithPaginationAndSort(rideRepository.findAll(PageRequest.of(page, offset)
                             .withSort(Sort.by(sortByField)))
                     .map(rideDTOConverter::convertRideToRideResponse), sortByField);
@@ -238,7 +239,10 @@ public class RideServiceImpl implements RideService {
         }
     }
     private void validatePaginationParameters(Integer offset, Integer page) {
-        if(offset < 0) throw new InvalidRequestException("Offset parameter is invalid");
+        if(offset <= 0) throw new InvalidRequestException("Offset parameter is invalid");
         if(page < 0)throw new InvalidRequestException("Page parameter is invalid");
+    }
+    private void validatePrice(Double price) {
+        if(price < 0) throw new InvalidRequestException("Price parameter is invalid");
     }
 }
