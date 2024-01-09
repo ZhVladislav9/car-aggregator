@@ -6,12 +6,9 @@ import com.driverservice.driverservice.dto.response.DriversListResponse;
 import com.driverservice.driverservice.service.DriverServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/driver")

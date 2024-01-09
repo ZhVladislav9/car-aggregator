@@ -5,7 +5,6 @@ import com.driverservice.driverservice.dto.response.DriverResponse;
 import com.driverservice.driverservice.models.Driver;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 

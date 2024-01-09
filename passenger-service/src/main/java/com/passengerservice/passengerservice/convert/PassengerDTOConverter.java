@@ -5,7 +5,6 @@ import com.passengerservice.passengerservice.dto.response.PassengerResponse;
 import com.passengerservice.passengerservice.models.Passenger;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 

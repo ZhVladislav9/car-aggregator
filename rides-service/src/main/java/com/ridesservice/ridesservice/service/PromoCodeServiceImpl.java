@@ -32,9 +32,8 @@ public class PromoCodeServiceImpl implements PromoCodeService {
     public PromoCodeDTO getPromoCodeById(String id){
         return promoCodeDTOConverter
                 .convertPromoCodeToPromoCodeDTO(promoCodeRepository.findById(id)
-                                //.orElseThrow(() -> new InvalidRequestException(id)));
-                        .orElseThrow(() -> new PromoCodeNotFoundException(String.format(PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE, id))));
-                                //PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE, id)));
+                        .orElseThrow(() -> new PromoCodeNotFoundException(
+                                String.format(PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE, id))));
     }
     public PromoCodesDTOList getAll(){
         List<PromoCodeDTO> codes = promoCodeRepository.findAll()
