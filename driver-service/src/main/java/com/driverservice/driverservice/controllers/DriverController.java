@@ -36,6 +36,10 @@ public class DriverController {
     public DriverResponse updateDriver(@RequestParam Integer id, @RequestBody @Valid DriverRequest driverRequest){
         return driverServiceImpl.updateDriver(id, driverRequest);
     }
+    @PutMapping("/{id}/rating")
+    public DriverResponse updateRating(@PathVariable Integer id, @RequestParam Double rating){
+        return driverServiceImpl.updateRating(id, rating);
+    }
     @DeleteMapping
     public ResponseEntity<HttpStatus> deleteDriver(@RequestParam Integer id){
         return driverServiceImpl.deleteDriver(id);

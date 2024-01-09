@@ -36,7 +36,16 @@ public class DriverServiceImpl implements DriverService {
         return driverDTOConverter.convertDriverToDriverResponse(driverRepository.findById(id)
                 .orElseThrow(() -> new DriverNotFoundException(id)));
     }
-
+    @Transactional
+    public DriverResponse updateRating(Integer id, Double rating){
+        if(!driverRepository.existsById(id))
+            throw new DriverNotFoundException(id);
+        validateRating(rating);
+        Driver driver = getDriverEntityById(id);
+        driver.setRating(rating);
+        driverRepository.save(driver);
+        return driverDTOConverter.convertDriverToDriverResponse(driver);
+    }
     @Transactional
     public DriverResponse updateDriver(Integer id, DriverRequest driverRequest){
         if(!driverRepository.existsById(id))
@@ -181,5 +190,9 @@ public class DriverServiceImpl implements DriverService {
     private void validatePaginationParameters(Integer offset, Integer page) {
         if(offset <= 0) throw new InvalidRequestException("Offset parameter is invalid");
         if(page < 0)throw new InvalidRequestException("Page parameter is invalid");
+    }
+    private void validateRating(Double rating) {
+        if(rating < 1)throw new InvalidRequestException("Rating parameter is invalid (Min value 1)");
+        if(rating > 5)throw new InvalidRequestException("Page parameter is invalid (Max value 5)");
     }
 }
