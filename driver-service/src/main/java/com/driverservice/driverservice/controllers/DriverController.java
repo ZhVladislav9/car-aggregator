@@ -49,7 +49,7 @@ public class DriverController {
         return driverServiceImpl.addDriver(driverRequest);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/availability")
     public DriverResponse changeAvailability(@PathVariable Integer id) {
         return driverServiceImpl.changeAvailability(id);
     }
