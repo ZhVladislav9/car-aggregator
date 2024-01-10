@@ -11,11 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/driver")
+@RequestMapping("/api-v1/driver")
 @RequiredArgsConstructor
 public class DriverController {
     private final DriverServiceImpl driverServiceImpl;
-    @GetMapping("/all")
+    @GetMapping
     public DriversListResponse gerDrivers(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer page,
@@ -32,16 +32,16 @@ public class DriverController {
                                                    @RequestParam(required = false, name = "field") String sortByField) {
         return driverServiceImpl.getAvailableDriversList(offset, page, sortByField);
     }
-    @PutMapping
-    public DriverResponse updateDriver(@RequestParam Integer id, @RequestBody @Valid DriverRequest driverRequest){
+    @PutMapping("/{id}")
+    public DriverResponse updateDriver(@PathVariable Integer id, @RequestBody @Valid DriverRequest driverRequest){
         return driverServiceImpl.updateDriver(id, driverRequest);
     }
     @PutMapping("/{id}/rating")
     public DriverResponse updateRating(@PathVariable Integer id, @RequestParam Double rating){
         return driverServiceImpl.updateRating(id, rating);
     }
-    @DeleteMapping
-    public ResponseEntity<HttpStatus> deleteDriver(@RequestParam Integer id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteDriver(@PathVariable Integer id){
         return driverServiceImpl.deleteDriver(id);
     }
     @PostMapping

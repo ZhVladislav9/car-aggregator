@@ -48,11 +48,10 @@ public class DriverServiceImpl implements DriverService {
     }
     @Transactional
     public DriverResponse updateDriver(Integer id, DriverRequest driverRequest){
-        if(!driverRepository.existsById(id))
-            throw new DriverNotFoundException(id);
-        Driver driver = driverDTOConverter.convertDriverRequestToDriver(driverRequest);
-        emailUpdateCheck(id, driverRequest.getEmail());
-        phoneUpdateCheck(id, driverRequest.getPhone());
+        Driver driver = getDriverEntityById(id);
+        emailUpdateCheck(driverRequest, driver);
+        phoneUpdateCheck(driverRequest, driver);
+        driver = driverDTOConverter.convertDriverRequestToDriver(driverRequest);
         driver.setId(id);
         driverRepository.save(driver);
         return driverDTOConverter.convertDriverToDriverResponse(driver);
@@ -81,15 +80,13 @@ public class DriverServiceImpl implements DriverService {
         driverRepository.save(driver);
         return driverDTOConverter.convertDriverToDriverResponse(driver);
     }
-    private void emailUpdateCheck(Integer id, String email){
-        Driver driver = getDriverEntityById(id);
-        if(!driver.getEmail().equals(email))
-            emailIsUniqueCheck(email);
+    private void emailUpdateCheck(DriverRequest driverRequest, Driver driver){
+        if(!driverRequest.getEmail().equals(driver.getEmail()))
+            emailIsUniqueCheck(driverRequest.getEmail());
     }
-    private void phoneUpdateCheck(Integer id, String phone){
-        Driver driver = getDriverEntityById(id);
-        if(!driver.getPhone().equals(phone))
-            phoneIsUniqueCheck(phone);
+    private void phoneUpdateCheck(DriverRequest driverRequest, Driver driver){
+        if(!driverRequest.getPhone().equals(driver.getPhone()))
+            phoneIsUniqueCheck(driverRequest.getEmail());
     }
     private void emailIsUniqueCheck(String email) {
         if (driverRepository.existsByEmail(email)) {
@@ -188,11 +185,11 @@ public class DriverServiceImpl implements DriverService {
         }
     }
     private void validatePaginationParameters(Integer offset, Integer page) {
-        if(offset <= 0) throw new InvalidRequestException("Offset parameter is invalid");
-        if(page < 0)throw new InvalidRequestException("Page parameter is invalid");
+        if(offset <= 0) throw new InvalidRequestException("validation.driver.offset.notValid");
+        if(page < 0)throw new InvalidRequestException("validation.driver.page.notValid");
     }
     private void validateRating(Double rating) {
-        if(rating < 1)throw new InvalidRequestException("Rating parameter is invalid (Min value 1)");
-        if(rating > 5)throw new InvalidRequestException("Page parameter is invalid (Max value 5)");
+        if(rating < 1)throw new InvalidRequestException("validation.driver.rating.min = 1");
+        if(rating > 5)throw new InvalidRequestException("validation.driver.rating.max = 5");
     }
 }

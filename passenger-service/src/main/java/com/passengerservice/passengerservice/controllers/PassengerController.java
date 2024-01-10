@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/passenger")
+@RequestMapping("/api-v1/passenger")
 @RequiredArgsConstructor
 public class PassengerController {
     private final PassengerServiceImpl passengerServiceImpl;
 
-    @GetMapping("/all")
+    @GetMapping
     public PassengersListResponse getPassengers(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer page,
@@ -28,17 +28,17 @@ public class PassengerController {
     public PassengerResponse getPassengerById(@PathVariable int id){
         return passengerServiceImpl.getPassengerById(id);
     }
-    @PutMapping
-    public PassengerResponse updatePassenger(@RequestParam int id, @RequestBody @Valid PassengerRequest passengerRequest){
+    @PutMapping("/{id}")
+    public PassengerResponse updatePassenger(@PathVariable int id, @RequestBody @Valid PassengerRequest passengerRequest){
         return passengerServiceImpl.updatePassenger(id, passengerRequest);
     }
     @PutMapping("/{id}/rating")
     public PassengerResponse updateRating(@PathVariable Integer id, @RequestParam Double rating){
         return passengerServiceImpl.updateRating(id, rating);
     }
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public ResponseEntity<HttpStatus> deletePassenger(@RequestParam int id){
+    public ResponseEntity<HttpStatus> deletePassenger(@PathVariable int id){
         return passengerServiceImpl.deletePassenger(id);
     }
 

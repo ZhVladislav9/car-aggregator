@@ -35,18 +35,6 @@ public class PassengerServiceImpl implements PassengerService {
         return passengerDTOConverter.convertPassengerToPassengerResponse(passengerRepository.findById(id)
                 .orElseThrow(() -> new PassengerNotFoundException(id)));
     }
-
-    @Transactional
-    public PassengerResponse updatePassenger(int id, PassengerRequest passengerRequest){
-        if(!passengerRepository.existsById(id))
-            throw new PassengerNotFoundException(id);
-        Passenger passenger = passengerDTOConverter.convertPassengerRequestToPassenger(passengerRequest);
-        emailUpdateCheck(id, passenger.getEmail());
-        phoneUpdateCheck(id, passenger.getPhone());
-        passenger.setId(id);
-        passengerRepository.save(passenger);
-        return passengerDTOConverter.convertPassengerToPassengerResponse(passenger);
-    }
     @Transactional
     public PassengerResponse updateRating(Integer id, Double rating){
         if(!passengerRepository.existsById(id))
@@ -73,15 +61,23 @@ public class PassengerServiceImpl implements PassengerService {
         passengerRepository.save(passenger);
         return passengerDTOConverter.convertPassengerToPassengerResponse(passenger);
     }
-    private void emailUpdateCheck(Integer id, String email){
+    @Transactional
+    public PassengerResponse updatePassenger(int id, PassengerRequest passengerRequest){
         Passenger passenger = getPassengerEntityById(id);
-        if(!passenger.getEmail().equals(email))
-            emailIsUniqueCheck(email);
+        emailUpdateCheck(passengerRequest, passenger);
+        phoneUpdateCheck(passengerRequest, passenger);
+        passenger = passengerDTOConverter.convertPassengerRequestToPassenger(passengerRequest);
+        passenger.setId(id);
+        passengerRepository.save(passenger);
+        return passengerDTOConverter.convertPassengerToPassengerResponse(passenger);
     }
-    private void phoneUpdateCheck(Integer id, String phone){
-        Passenger passenger = getPassengerEntityById(id);
-        if(!passenger.getPhone().equals(phone))
-            phoneIsUniqueCheck(phone);
+    private void emailUpdateCheck(PassengerRequest passengerRequest, Passenger passenger){
+        if(!passengerRequest.getEmail().equals(passenger.getEmail()))
+            emailIsUniqueCheck(passengerRequest.getEmail());
+    }
+    private void phoneUpdateCheck(PassengerRequest passengerRequest, Passenger passenger){
+        if(!passengerRequest.getPhone().equals(passenger.getPhone()))
+            phoneIsUniqueCheck(passengerRequest.getEmail());
     }
     private void emailIsUniqueCheck(String email) {
         if (passengerRepository.existsByEmail(email)) {
@@ -162,11 +158,11 @@ public class PassengerServiceImpl implements PassengerService {
         }
     }
     private void validatePaginationParameters(Integer offset, Integer page) {
-        if(offset <= 0) throw new InvalidRequestException("Offset parameter is invalid");
-        if(page < 0)throw new InvalidRequestException("Page parameter is invalid");
+        if(offset <= 0) throw new InvalidRequestException("validation.passenger.offset.notValid");
+        if(page < 0)throw new InvalidRequestException("validation.passenger.page.notValid");
     }
     private void validateRating(Double rating) {
-        if(rating < 1)throw new InvalidRequestException("Rating parameter is invalid (Min value 1)");
-        if(rating > 5)throw new InvalidRequestException("Page parameter is invalid (Max value 5)");
+        if(rating < 1)throw new InvalidRequestException("validation.passenger.rating.min = 1");
+        if(rating > 5)throw new InvalidRequestException("validation.passenger.rating.max = 5");
     }
 }

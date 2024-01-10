@@ -10,22 +10,22 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DriverRequest {
-    @NotBlank(message = "{name is empty}")
-    @Pattern(regexp = "^[^\\d]+$", message = "{name has digits}")
+    @NotBlank(message = "validation.driver.name.empty")
+    @Pattern(regexp = "^[^\\d]+$", message = "validation.driver.name.hasDigits")
     String name;
-    @NotBlank(message = "{surname is empty}")
-    @Pattern(regexp = "^[^\\d]+$", message = "{surname has digits}")
+    @NotBlank(message = "validation.driver.surname.empty")
+    @Pattern(regexp = "^[^\\d]+$", message = "validation.driver.surname.hasDigits")
     String surname;
-    @NotNull(message = "{rating is 0}")
-    @Min(value = 1,message = "Min value is 1")
-    @Max(value = 5,message = "Max value is 5")
+    @NotNull(message = "validation.driver.rating.isNull")
+    @Min(value = 1,message = "validation.driver.rating.min = 1")
+    @Max(value = 5,message = "validation.driver.rating.max = 5")
     Double rating;
-    @NotBlank(message = "{email is empty}")
-    @Email(message = "{email is not valid}")
-    String email;
-    @NotBlank(message = "{phone is empty}")
-    @Pattern(regexp = "^\\d{10,15}$", message = "{phone is not valid}")
+    @NotBlank(message = "validation.driver.phone.empty")
+    @Pattern(regexp = "^\\d{10,15}$", message = "validation.driver.phone.notValid")
     String phone;
-    @NotNull(message = "{availability is empty}")
+    @NotBlank(message = "validation.driver.email.empty")
+    @Email(message = "validation.driver.email.notValid")
+    String email;
+    @NotNull(message = "validation.driver.isAvailable.empty")
     Boolean isAvailable;
 }

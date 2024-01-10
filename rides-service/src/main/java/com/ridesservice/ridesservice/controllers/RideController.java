@@ -11,11 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/ride")
+@RequestMapping("/api-v1/ride")
 @RequiredArgsConstructor
 public class RideController {
     private final RideServiceImpl rideServiceImpl;
-    @GetMapping("/all")
+    @GetMapping
     public RidesListResponse gerRides(@RequestParam(required = false) Integer offset,
                                       @RequestParam(required = false) Integer page,
                                       @RequestParam(required = false, name = "field") String sortByField){
@@ -26,12 +26,12 @@ public class RideController {
         return rideServiceImpl.getRideById(id);
     }
 
-    @PutMapping
-    public RideResponse updateRide(@RequestParam Integer id, @RequestBody @Valid RideRequest rideRequest){
+    @PutMapping("/{id}")
+    public RideResponse updateRide(@PathVariable Integer id, @RequestBody @Valid RideRequest rideRequest){
         return rideServiceImpl.updateRide(id, rideRequest);
     }
-    @DeleteMapping
-    public ResponseEntity<HttpStatus> deleteRide(@RequestParam Integer id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteRide(@PathVariable Integer id){
         return rideServiceImpl.deleteRide(id);
     }
     @PostMapping
@@ -58,7 +58,7 @@ public class RideController {
     public RideResponse updatePrice(@PathVariable Integer id,@RequestParam Double price){
         return rideServiceImpl.updatePrice(id, price);
     }
-    @GetMapping("/passenger/{id}/history")
+    @GetMapping("/passenger/{id}")
     public RidesListResponse getHistoryByPassengerId(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer page,
@@ -66,7 +66,7 @@ public class RideController {
             @PathVariable Integer  id){
         return rideServiceImpl.getPassengerRidesHistory(offset, page, sortByField, id);
     }
-    @GetMapping("/driver/{id}/history")
+    @GetMapping("/driver/{id}")
     public RidesListResponse getHistoryByDriverId(
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) Integer page,

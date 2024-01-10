@@ -10,20 +10,20 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PassengerRequest {
-    @NotBlank(message = "{name is empty}")
-    @Pattern(regexp = "^[^\\d]+$", message = "{name has digits}")
+    @NotBlank(message = "validation.passenger.name.empty")
+    @Pattern(regexp = "^[^\\d]+$", message = "validation.passenger.name.hasDigits")
     String name;
-    @NotBlank(message = "{surname is empty}")
-    @Pattern(regexp = "^[^\\d]+$", message = "{surname has digits}")
+    @NotBlank(message = "validation.passenger.surname.empty")
+    @Pattern(regexp = "^[^\\d]+$", message = "validation.passenger.surname.hasDigits")
     String surname;
-    @NotNull(message = "{rating is 0}")
-    @Min(value = 1,message = "Min value is 1")
-    @Max(value = 5,message = "Max value is 5")
+    @NotNull(message = "validation.passenger.rating.isNull")
+    @Min(value = 1,message = "validation.passenger.rating.min = 1")
+    @Max(value = 5,message = "validation.passenger.rating.max = 5")
     Double rating;
-    @NotBlank(message = "{phone is empty}")
-    @Pattern(regexp = "^\\d{10,15}$", message = "{phone is not valid}")
+    @NotBlank(message = "validation.passenger.phone.empty")
+    @Pattern(regexp = "^\\d{10,15}$", message = "validation.passenger.phone.notValid")
     String phone;
-    @NotBlank(message = "{email is empty}")
-    @Email(message = "{email is not valid}")
+    @NotBlank(message = "validation.passenger.email.empty")
+    @Email(message = "validation.passenger.email.notValid")
     String email;
 }

@@ -13,15 +13,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/promo-code")
 @RequiredArgsConstructor
-
 public class PromoCodeController {
     private final PromoCodeServiceImpl promoCodeService;
 
-    @GetMapping
-    public PromoCodeResponse getPromoCodeById(@RequestParam Integer id){
+    @GetMapping("/{id}")
+    public PromoCodeResponse getPromoCodeById(@PathVariable Integer id){
         return promoCodeService.getPromoCodeById(id);
     }
-    @GetMapping("/all")
+    @GetMapping
     public PromoCodeListResponse getAll() {
         return promoCodeService.getAll();
     }
@@ -29,12 +28,12 @@ public class PromoCodeController {
     public PromoCodeResponse addPromoCode(@RequestBody @Valid PromoCodeRequest promoCodeRequest){
         return promoCodeService.addPromoCode(promoCodeRequest);
     }
-    @PutMapping
-    public PromoCodeResponse updatePromoCode(@RequestParam Integer id, @RequestBody @Valid PromoCodeRequest promoCodeRequest){
+    @PutMapping("/{id}")
+    public PromoCodeResponse updatePromoCode(@PathVariable Integer id, @RequestBody @Valid PromoCodeRequest promoCodeRequest){
         return promoCodeService.updatePromoCode(id, promoCodeRequest);
     }
-    @DeleteMapping
-    public ResponseEntity<HttpStatus> deletePromoCode(@RequestParam Integer id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deletePromoCode(@PathVariable Integer id){
         return promoCodeService.deletePromoCode(id);
     }
 }
