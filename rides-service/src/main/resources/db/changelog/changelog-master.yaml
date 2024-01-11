@@ -1,0 +1,81 @@
+databaseChangeLog:
+  - logicalFilePath: db/changelog/db.changelog-master.yaml
+  - changeSet:
+      id: 1
+      author: zh_vladislav
+      changes:
+        - createTable:
+            tableName: rides
+            columns:
+              - column:
+                  name: id
+                  type: INTEGER
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: pick_up_address
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: destination_address
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: DOUBLE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: finish_date
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: passenger_id
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: promo_codes
+            columns:
+              - column:
+                  name: id
+                  type: INTEGER
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: coefficient
+                  type: DOUBLE
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: rides
+        - dropTable:
+            tableName: promo_codes
