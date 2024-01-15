@@ -5,7 +5,6 @@ import lombok.Getter;
 import java.util.Map;
 
 import static com.passengerservice.passengerservice.util.Messages.*;
-
 @Getter
 public class AlreadyExistsException extends RuntimeException{
 

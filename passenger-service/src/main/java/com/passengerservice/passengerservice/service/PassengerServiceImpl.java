@@ -31,6 +31,7 @@ public class PassengerServiceImpl implements PassengerService {
     private final PassengerRepository passengerRepository;
     private final PassengerDTOConverter passengerDTOConverter;
 
+
     public PassengerResponse getPassengerById(int id){
         return passengerDTOConverter.convertPassengerToPassengerResponse(passengerRepository.findById(id)
                 .orElseThrow(() -> new PassengerNotFoundException(id)));

@@ -16,4 +16,5 @@ public interface PassengerService {
     public PassengerResponse updatePassenger(int id, PassengerRequest passengerRequest);
     public ResponseEntity<HttpStatus> deletePassenger(int id);
     public PassengerResponse addPassenger(PassengerRequest passengerRequest);
+
 }

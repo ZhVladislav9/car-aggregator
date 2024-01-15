@@ -1,7 +1,6 @@
 package com.passengerservice.passengerservice.util;
 
 import lombok.experimental.UtilityClass;
-
 @UtilityClass
 public class Messages {
     public final String VALIDATION_FAILED_MESSAGE = "Invalid request";

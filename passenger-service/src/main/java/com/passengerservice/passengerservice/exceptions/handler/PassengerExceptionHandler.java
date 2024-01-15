@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import static com.passengerservice.passengerservice.util.Messages.*;
 
 import java.util.HashMap;
-
 @ControllerAdvice
 public class PassengerExceptionHandler {
     @ExceptionHandler(value = {PassengerNotFoundException.class})
