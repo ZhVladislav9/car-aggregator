@@ -26,7 +26,6 @@ public class PassengerExceptionHandler {
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
-
     @ExceptionHandler(value = {InvalidRequestException.class})
     public ResponseEntity<Object> handleNotFoundException(InvalidRequestException invalidRequestException) {
         ExceptionResponse response =
@@ -35,7 +34,6 @@ public class PassengerExceptionHandler {
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
-
     @ExceptionHandler(AlreadyExistsException.class)
     public ResponseEntity<Object> handlePassengerAlreadyExists(AlreadyExistsException alreadyExistsException) {
         ExceptionResponse response =
@@ -44,7 +42,6 @@ public class PassengerExceptionHandler {
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
         var errors = new HashMap<String, String>();
@@ -56,5 +53,4 @@ public class PassengerExceptionHandler {
         ValidationExceptionResponse response = new ValidationExceptionResponse(HttpStatus.BAD_REQUEST, VALIDATION_FAILED_MESSAGE, errors);
         return new ResponseEntity<>(response, response.getStatus());
     }
-
 }

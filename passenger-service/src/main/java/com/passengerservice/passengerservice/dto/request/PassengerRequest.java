@@ -2,9 +2,9 @@ package com.passengerservice.passengerservice.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter

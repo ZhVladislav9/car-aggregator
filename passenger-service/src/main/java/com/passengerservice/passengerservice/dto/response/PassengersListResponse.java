@@ -7,8 +7,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
-@Getter
 @Builder
+@Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PassengersListResponse {
     Integer page;

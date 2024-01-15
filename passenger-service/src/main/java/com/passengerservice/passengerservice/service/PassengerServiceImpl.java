@@ -28,6 +28,7 @@ import static com.passengerservice.passengerservice.util.Messages.*;
 @Service
 @RequiredArgsConstructor
 public class PassengerServiceImpl implements PassengerService {
+
     private final PassengerRepository passengerRepository;
     private final PassengerDTOConverter passengerDTOConverter;
 

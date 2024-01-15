@@ -9,8 +9,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExceptionResponse {
     final HttpStatus status;
     final String message;

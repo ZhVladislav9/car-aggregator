@@ -28,4 +28,5 @@
             <dropTable tableName="passengers"/>
         </rollback>
     </changeSet>
+
 </databaseChangeLog>

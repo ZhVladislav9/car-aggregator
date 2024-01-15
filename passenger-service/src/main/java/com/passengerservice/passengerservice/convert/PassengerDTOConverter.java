@@ -16,12 +16,6 @@ public class PassengerDTOConverter {
     public PassengerResponse convertPassengerToPassengerResponse(Passenger passenger){
         return modelMapper.map(passenger,PassengerResponse.class);
     }
-    public Passenger convertPassengerResponseToPassenger(PassengerResponse passengerResponse){
-        return modelMapper.map(passengerResponse,Passenger.class);
-    }
-    public PassengerRequest convertPassengerToPassengerRequest(Passenger passenger){
-        return modelMapper.map(passenger,PassengerRequest.class);
-    }
     public Passenger convertPassengerRequestToPassenger(PassengerRequest passengerRequest){
         return modelMapper.map(passengerRequest,Passenger.class);
     }

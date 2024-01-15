@@ -12,7 +12,7 @@ public class PassengerResponse {
     Integer id;
     String name;
     String surname;
-    Double rating;
     String phone;
     String email;
+    Double rating;
 }

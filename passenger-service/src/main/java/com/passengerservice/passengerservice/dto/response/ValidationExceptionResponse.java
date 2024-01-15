@@ -9,8 +9,8 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 @Builder
-@AllArgsConstructor
 @Getter
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ValidationExceptionResponse{
     final HttpStatus status;

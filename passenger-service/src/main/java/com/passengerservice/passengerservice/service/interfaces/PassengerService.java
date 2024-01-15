@@ -11,6 +11,7 @@ import java.util.List;
 
 @Service
 public interface PassengerService {
+
     public PassengersListResponse getPassengers(List<PassengerResponse> passengers);
     public PassengerResponse getPassengerById(int id);
     public PassengerResponse updatePassenger(int id, PassengerRequest passengerRequest);
