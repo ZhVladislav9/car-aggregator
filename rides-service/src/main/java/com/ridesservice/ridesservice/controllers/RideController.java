@@ -3,7 +3,9 @@ package com.ridesservice.ridesservice.controllers;
 import com.ridesservice.ridesservice.dto.request.RideRequest;
 import com.ridesservice.ridesservice.dto.response.RideResponse;
 import com.ridesservice.ridesservice.dto.response.RidesListResponse;
+import com.ridesservice.ridesservice.models.Passenger;
 import com.ridesservice.ridesservice.service.RideServiceImpl;
+import com.ridesservice.ridesservice.util.RidesFeignClient;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api-v1/ride")
+@RequestMapping("/api/v1/ride")
 @RequiredArgsConstructor
 public class RideController {
     private final RideServiceImpl rideServiceImpl;

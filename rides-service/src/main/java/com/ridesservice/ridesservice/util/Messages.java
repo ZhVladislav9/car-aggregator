@@ -12,4 +12,5 @@ public class Messages {
     public final String PROMO_CODE_WITH_NAME_EXISTS_MESSAGE = "PromoCode with name %s already exists";
     public final String PROMO_CODE_NOT_FOUND_WITH_ID_MESSAGE = "PromoCode with id %s was not found";
     public final String PROMO_CODE_NOT_FOUND_WITH_NAME_MESSAGE = "PromoCode with name %s was not found";
+    public final String PASSENGER_NOT_FOUND_WITH_ID_MESSAGE = "Passenger with id %d was not found";
 }

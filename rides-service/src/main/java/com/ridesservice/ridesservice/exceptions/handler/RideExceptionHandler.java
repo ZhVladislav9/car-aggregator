@@ -2,10 +2,8 @@ package com.ridesservice.ridesservice.exceptions.handler;
 
 import com.ridesservice.ridesservice.dto.response.ExceptionResponse;
 import com.ridesservice.ridesservice.dto.response.ValidationExceptionResponse;
-import com.ridesservice.ridesservice.exceptions.AlreadyExistsException;
-import com.ridesservice.ridesservice.exceptions.PromoCodeNotFoundException;
-import com.ridesservice.ridesservice.exceptions.RideNotFoundException;
-import com.ridesservice.ridesservice.exceptions.InvalidRequestException;
+import com.ridesservice.ridesservice.exceptions.*;
+import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -63,6 +61,14 @@ public class RideExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         ValidationExceptionResponse response = new ValidationExceptionResponse(HttpStatus.BAD_REQUEST, VALIDATION_FAILED_MESSAGE, errors);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+    @ExceptionHandler(value = {PassengerNotFoundException.class})
+    public ResponseEntity<Object> handleNotFoundException(PassengerNotFoundException notFoundException) {
+        ExceptionResponse response =
+                new ExceptionResponse(HttpStatus.NOT_FOUND,
+                        notFoundException.getMessage()
+                );
         return new ResponseEntity<>(response, response.getStatus());
     }
 }

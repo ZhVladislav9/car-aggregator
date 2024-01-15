@@ -5,11 +5,14 @@ import com.ridesservice.ridesservice.dto.request.RideRequest;
 import com.ridesservice.ridesservice.dto.response.RideResponse;
 import com.ridesservice.ridesservice.dto.response.RidesListResponse;
 import com.ridesservice.ridesservice.exceptions.InvalidRequestException;
+import com.ridesservice.ridesservice.exceptions.PassengerNotFoundException;
 import com.ridesservice.ridesservice.exceptions.RideNotFoundException;
 import com.ridesservice.ridesservice.models.Ride;
 import com.ridesservice.ridesservice.models.RideStatus;
 import com.ridesservice.ridesservice.repository.RideRepository;
 import com.ridesservice.ridesservice.service.interfaces.RideService;
+import com.ridesservice.ridesservice.util.RidesFeignClient;
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,10 +36,12 @@ public class RideServiceImpl implements RideService {
     private final RideRepository rideRepository;
     private final RideDTOConverter rideDTOConverter;
     private final PromoCodeServiceImpl promoCodeService;
+    private final RidesFeignClient ridesFeignClient;
     @Transactional
     public RideResponse addRide(RideRequest request) {
         Ride ride = new Ride();
         validatePassengerId(request.getPassengerId());
+        checkPassengerExistence(request.getPassengerId());
         ride.setPassengerId(request.getPassengerId());
         ride.setPickUpAddress(request.getPickUpAddress());
         ride.setDestinationAddress(request.getDestinationAddress());
@@ -116,6 +121,7 @@ public class RideServiceImpl implements RideService {
             throw new RideNotFoundException(NOT_FOUND_WITH_ID_MESSAGE, id);
         Ride ride = rideDTOConverter.convertRideRequestToRide(rideRequest);
         validatePassengerId(rideRequest.getPassengerId());
+        checkPassengerExistence(rideRequest.getPassengerId());
         ride.setId(id);
         rideRepository.save(ride);
         return rideDTOConverter.convertRideToRideResponse(ride);
@@ -249,5 +255,13 @@ public class RideServiceImpl implements RideService {
     }
     private void validatePassengerId(Integer id) {
         if(id <= 0) throw new InvalidRequestException("validation.ride.passengerId.notValid");
+    }
+    private void checkPassengerExistence(Integer id){
+        try{
+            ridesFeignClient.getPassenger(id);
+        }catch (FeignException e){
+            if (e.status() == 404)
+                throw new PassengerNotFoundException(id);
+        }
     }
 }
